@@ -12,12 +12,83 @@
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflow-x:hidden;}
 
 /* LOADER */
-#loader{position:fixed;inset:0;background:#fff;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .8s;}
-#loader img{width:320px;filter:drop-shadow(0 20px 40px rgba(0,0,0,.2));animation:hop 1.2s infinite cubic-bezier(.4,0,.2,1);}
-#loader p{margin-top:2rem;font-weight:700;font-size:1.1rem;color:#888;letter-spacing:.2em;text-transform:uppercase;}
-@keyframes hop{0%,100%{transform:translateY(0) rotate(0deg);}30%{transform:translateY(-40px) rotate(-4deg);}60%{transform:translateY(-20px) rotate(3deg);}80%{transform:translateY(-5px) rotate(-1deg);}}
-.smash{animation:smash 1s forwards cubic-bezier(.8,0,.2,1)!important;}
-@keyframes smash{0%{transform:scale(1);filter:blur(0);opacity:1;}50%{transform:scale(2.5) translateY(-30px);filter:blur(1px);}100%{transform:scale(25) translateY(40px);filter:blur(12px);opacity:0;}}
+#loader{
+  position:fixed;inset:0;z-index:9999;background:#000;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+#loader-bg{
+  position:absolute;inset:0;background:#fff;
+  transform:scaleY(0);transform-origin:bottom;
+  animation:bgReveal .6s 0.4s cubic-bezier(.16,1,.3,1) forwards;
+}
+@keyframes bgReveal{to{transform:scaleY(1);}}
+
+/* spotlight circle that fades in */
+#spotlight{
+  position:absolute;
+  width:700px;height:700px;border-radius:50%;
+  background:radial-gradient(circle, rgba(204,255,0,.15) 0%, transparent 70%);
+  animation:spotIn .8s .3s ease forwards;
+  opacity:0;
+}
+@keyframes spotIn{to{opacity:1;}}
+
+/* croc left - enters from left */
+#croc-left{
+  position:absolute;
+  width:280px;
+  transform:translateX(-120vw) rotate(0deg);
+  animation:walkRight 1s 1s cubic-bezier(.16,1,.3,1) forwards;
+  filter:drop-shadow(0 30px 30px rgba(0,0,0,.15));
+  z-index:2;
+}
+@keyframes walkRight{
+  0%{transform:translateX(-120vw) rotate(-5deg);}
+  70%{transform:translateX(60px) rotate(3deg);}
+  85%{transform:translateX(20px) rotate(-1deg);}
+  100%{transform:translateX(40px) rotate(0deg);}
+}
+
+/* croc right - mirrored, enters from right */
+#croc-right{
+  position:absolute;
+  width:280px;
+  transform:translateX(120vw) rotate(0deg) scaleX(-1);
+  animation:walkLeft 1s 1s cubic-bezier(.16,1,.3,1) forwards;
+  filter:drop-shadow(0 30px 30px rgba(0,0,0,.15));
+  z-index:2;
+}
+@keyframes walkLeft{
+  0%{transform:translateX(120vw) scaleX(-1) rotate(-5deg);}
+  70%{transform:translateX(-60px) scaleX(-1) rotate(3deg);}
+  85%{transform:translateX(-20px) scaleX(-1) rotate(-1deg);}
+  100%{transform:translateX(-40px) scaleX(-1) rotate(0deg);}
+}
+
+/* STOMP text */
+#stomp{
+  position:absolute;bottom:25%;
+  font-family:'Inter',sans-serif;font-weight:900;font-size:6rem;
+  letter-spacing:-.04em;text-transform:uppercase;
+  color:#000;opacity:0;z-index:3;
+  animation:stompIn .4s 2.2s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes stompIn{
+  0%{opacity:0;transform:scale(1.5);}
+  100%{opacity:1;transform:scale(1);}
+}
+#stomp span{color:#ccff00;}
+
+/* REVEAL flash */
+#flash{
+  position:absolute;inset:0;background:#ccff00;
+  opacity:0;z-index:10;pointer-events:none;
+  animation:flashIn .3s 2.9s ease forwards;
+}
+@keyframes flashIn{
+  0%{opacity:0;}50%{opacity:1;}100%{opacity:0;}
+}
 
 /* MAIN */
 #app{opacity:0;transform:translateY(50px);transition:opacity 1.2s cubic-bezier(.16,1,.3,1),transform 1.2s cubic-bezier(.16,1,.3,1);}
@@ -75,8 +146,12 @@ tr:hover td{background:#1a1a1a;}
 <body>
 
 <div id="loader">
-  <img src="croc.png" id="croc-img" alt="Lego Crocs">
-  <p>Loading...</p>
+  <div id="loader-bg"></div>
+  <div id="spotlight"></div>
+  <img src="croc.png" id="croc-left" alt="Lego Croc Left">
+  <img src="croc.png" id="croc-right" alt="Lego Croc Right">
+  <div id="stomp">LEGO <span>x</span> HOOKAH</div>
+  <div id="flash"></div>
 </div>
 
 <main id="app">
@@ -216,16 +291,14 @@ tr:hover td{background:#1a1a1a;}
 
 <script>
 window.addEventListener('load', () => {
+  // After full animation sequence (flash at 2.9s + 0.3s = 3.2s), reveal site
   setTimeout(() => {
-    const img = document.getElementById('croc-img');
     const overlay = document.getElementById('loader');
-    img.classList.add('smash');
-    setTimeout(() => {
-      overlay.style.opacity = '0';
-      document.getElementById('app').classList.add('on');
-      setTimeout(() => overlay.style.display = 'none', 800);
-    }, 800);
-  }, 2200);
+    overlay.style.transition = 'opacity 0.6s ease';
+    overlay.style.opacity = '0';
+    document.getElementById('app').classList.add('on');
+    setTimeout(() => { overlay.style.display = 'none'; }, 700);
+  }, 3300);
 });
 </script>
 

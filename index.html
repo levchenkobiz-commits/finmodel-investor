@@ -160,9 +160,7 @@ tr:nth-child(even) td:first-child{background:#1e1e1e;}
     <div class="sep"></div>
     <button class="t b" onclick="sINV(0)">А: Долг 50%+50%</button>
     <button class="t b" onclick="sINV(1)">Б: Возврат 100% → 50/50</button>
-    <button class="t b" onclick="sINV(2)">В: Долг 100%+25%</button>
-    <div class="sep"></div>
-    <label class="t b" style="display:inline-flex; align-items:center; gap:5px; cursor:pointer;"><input type="checkbox" id="alcCheck" onchange="sAlc(this.checked)" style="accent-color:#CC0000; cursor:pointer; width:12px; height:12px; margin:0;"> &#127863; С алкогольным баром</label>
+    <button class="t b" onclick="sINV(2)">В: Долг 100%+33%</button>
   </div>
 </div>
 
@@ -185,181 +183,13 @@ const CH=new Set([11,13,14,17,18,19,20,21,22,23,24,25,26]);
 const BFK=['B','O','I'];
 const INVS=[1,2,3];
 const DESC={
-  '1':'А: Долг 50% от суммы инвестиций под 16.5%/год на остаток. Инвестор 50% прибыли как дивиденды. Управленец гасит долг из своих 50%. После выплаты — 50/50.',
-  '2':'Б: Возврат 100% инвестиций без процентов из прибыли. После полного возврата — прибыль 50/50. Провал: возврат 50% без процентов.',
-  '3':'В: Долг 100% инвестиций, ставка 16.5%/год от изначальной суммы. Форсированный возврат (вся прибыль на погашение). После выплаты: инвестор 25%, управляющий 75%. Провал: 50% суммы + проценты.'
+  '1':'А: Долг 6 500 000 (50%) под 16.5%/год. Инвестор получает 50% прибыли как дивиденды с первого месяца. Управляющий тратит свои 50% на погашение долга (проценты + тело). После погашения — оба получают 50%.',
+  '2':'Б: Возврат 13 000 000 руб без процентов из прибыли. После полного возврата — прибыль 50/50. Провал: возврат 6 500 000 без процентов.',
+  '3':'В: Долг 13 000 000 руб под 16.5%/год. Вся прибыль на погашение. После выплаты: инвестор 33% прибыли, управляющий 67%. Провал: 6 500 000 + проценты.'
 };
-const INVN={'1':'А: Долг 50%+50% доли','2':'Б: Возврат 100%, затем 50/50','3':'В: Долг 100%+25% доли'};
-let D_ORIG = JSON.parse(JSON.stringify(D));
-let alcCheck = false;
-window.sAlc = function(val) { alcCheck = val; buildModel(); update(); };
-
-function buildModel() {
-    window.D = JSON.parse(JSON.stringify(D_ORIG));
-    // Нормализация налога к 8% от выручки для всех сценариев
-    for (let k in window.D) {
-        window.D[k].forEach(function(row) {
-            let newTax = Math.round(row[3] * 0.08);
-            let diff = newTax - row[9];
-            row[9] = newTax;
-            row[17] -= diff;
-        });
-    }
-    let S = 35000;
-    const INV = alcCheck ? 14000000 : 13000000;
-    const BAR = alcCheck ? 200 : 0;
-    const REV_MUL = alcCheck ? (2800 + BAR) / 2800 : 1;
-
-    let bfk_all = ["N", "B", "O", "I"];
-
-
-    for (let k in window.D) {
-        if (!window.D.hasOwnProperty(k)) continue;
-        let rows = window.D[k];
-        for (let i = 0; i < rows.length; i++) {
-            let row = rows[i];
-            if (alcCheck) {
-                let origRev = row[3];
-                row[2] = 2800 + BAR;
-                row[3] = Math.round(row[3] * REV_MUL);
-                let rt = row[3] / origRev;
-                row[4] = Math.round(row[4] * rt);
-                row[6] = Math.round(row[6] * rt);
-                row[8] = Math.round(row[8] * rt);
-                row[9] = Math.round(row[9] * rt);
-                row[10] = Math.round(row[10] * rt);
-                row[17] = row[3] - row[4] - row[5] - row[6] - row[7] - row[8] - row[9] - row[10] - row[11] - row[12] - row[13] - row[14] - row[15] + row[16];
-            }
-        }
-    }
-
-    for (let k in window.D) {
-        let rows = window.D[k];
-        let cd = 0;
-        for (let i = 0; i < rows.length; i++) {
-            let r = rows[i];
-            if (r[12] === 70000) {
-                r[12] = 35000; 
-                r[17] += S; 
-            }
-        }
-    }
-
-    ["O_1", "O_2", "O_3", "I_1", "I_2", "I_3"].forEach(function(k) {
-        let rows = window.D[k];
-        if (!rows) return;
-        let multBase = k.startsWith("O") ? 3700 : 3900;
-        if (alcCheck) multBase += BAR;
-        for (let i = 48; i < 60; i++) {
-            let r = rows[i];
-            let rt = multBase / r[2];
-            let nv = Math.round(r[3] * rt);
-            r[2] = multBase;
-            r[3] = nv;
-            r[4] = Math.round(nv * 0.13);
-            r[6] = Math.round(r[6] * rt);
-            r[8] = Math.round(nv * 0.015);
-            r[9] = Math.round(r[9] * rt);
-            r[10] = Math.round(nv * 0.01);
-            r[17] = r[3] - r[4] - r[5] - r[6] - r[7] - r[8] - r[9] - r[10] - r[11] - r[12] - r[13] - r[14] - r[15] + r[16];
-        }
-    });
-
-    bfk_all.forEach(function(f) {
-        for (let i = 1; i <= 3; i++) {
-            let k = f + "_" + i;
-            let rows = window.D[k];
-            if (!rows) continue;
-            
-            let cumProf = 0;
-            for (let m = 0; m < 60; m++) {
-                cumProf += rows[m][17];
-                rows[m][18] = cumProf;
-            }
-
-            let debt = 0, rep = 0, i_pct = 0, m_pct = 0, fixed_rep = 0, rep_type = 0;
-            if (i === 1) { debt = INV * 0.5; rep = INV * 0.5; i_pct = 0.5; m_pct = 0.5; }
-            else if (i === 2) { debt = 0; rep = INV; i_pct = 0.5; m_pct = 0.5; rep_type = 1; }
-            else if (i === 3) { debt = INV; rep = 0; i_pct = 0.25; m_pct = 0.75; fixed_rep = INV * 0.5; }
-
-
-            let cd = debt, cr = rep;
-            let cum_i = 0, cum_m = 0, c_intr = 0;
-            let m_pay_i = 0, m_pay_m = 0;
-
-            for (let m = 0; m < 60; m++) {
-                let r = rows[m];
-                let prof = r[17] > 0 ? r[17] : 0;
-                let p_i = 0, p_m = 0;
-
-                if (i === 3) {
-                    let intr = (cd > 0) ? (INV * (0.165 / 12)) : 0;
-                    r[19] = intr;
-                    let to_pay = intr + cd;
-                    if (prof >= to_pay) {
-                        p_i = to_pay + (prof - to_pay) * i_pct;
-                        p_m = (prof - to_pay) * m_pct;
-                        cd = 0;
-                    } else {
-                        p_i = prof;
-                        p_m = 0;
-                        if (prof > intr) cd -= (prof - intr);
-                        else cd += (intr - prof);
-                    }
-                } else if (rep_type === 1) {
-                    if (cr > 0) {
-                        if (prof >= cr) { p_i = cr + (prof - cr) * i_pct; p_m = (prof - cr) * m_pct; cr = 0; }
-                        else { p_i = prof; p_m = 0; cr -= prof; }
-                    } else { p_i = prof * i_pct; p_m = prof * m_pct; }
-                } else {
-                    if (cd > 0) {
-                        if (prof >= cd) { p_i = cd + (prof - cd) * i_pct; p_m = (prof - cd) * m_pct; cd = 0; }
-                        else { p_i = prof; p_m = 0; cd -= prof; }
-                    } else { p_i = prof * i_pct; p_m = prof * m_pct; }
-                }
-
-                r[20] = cd; r[21] = cr;
-                r[22] = p_i; r[23] = p_m;
-                cum_i += p_i; cum_m += p_m;
-                r[24] = cum_i; r[25] = cum_m;
-                if (i === 3) c_intr += r[19];
-
-                if (p_i > 0 && !m_pay_i) m_pay_i = m + 1;
-                if (p_m > 0 && !m_pay_m) m_pay_m = m + 1;
-            }
-
-            let bizVal = Math.max(0, rows[59][17] * 25);
-            // Окупаемость = месяц когда накопленный доход инвестора >= INV
-            let inv_payback_month = null;
-            let cum_i_running = 0;
-            for (let m2 = 0; m2 < 60; m2++) {
-                cum_i_running += rows[m2][22];
-                if (cum_i_running >= INV && inv_payback_month === null) {
-                    inv_payback_month = m2 + 1;
-                }
-            }
-            if (!M[k]) M[k] = {};
-            M[k].invP = inv_payback_month ? 'Месяц ' + inv_payback_month : 'нет за 60 мес.';
-            M[k].mgrP = m_pay_m ? 'Месяц ' + m_pay_m : 'нет дохода';
-            M[k].invT = Math.round(cum_i);
-            M[k].mgrT = Math.round(cum_m);
-            M[k].roi = cum_i > 0 ? Math.round((cum_i - INV) / (INV/100)) : 0;
-            M[k].mult = Math.round(cum_i / INV * 100) / 100;
-            M[k].cumIntr = Math.round(c_intr);
-            M[k].bizVal = bizVal;
-            M[k].invBiz = Math.round(bizVal * i_pct);
-            M[k].mgrBiz = Math.round(bizVal * m_pct);
-        }
-    });
-
-    let h1 = document.querySelector(".hdr h1 span");
-    if (h1) {
-        let invFmt = (INV/1000000).toLocaleString('ru-RU') + " 000 000";
-        h1.innerText = `| ${invFmt} \u0440\u0443\u0431 | 16.5%/\u0433\u043E\u0434 (\u043A\u043B\u044E\u0447 14.5%+2%)`;
-    }
-}
-buildModel();
-var _s=document.createElement("style");_s.textContent=".tip-text{z-index:99999!important;}.hdr,.tabs,.t{overflow:visible!important;}";document.head.appendChild(_s);var _b=document.querySelectorAll(".t:not(.b)");if(_b[0])_b[0].textContent="Негативный";if(_b[1])_b[1].textContent="Базовый";if(_b[2])_b[2].textContent="Оптимистичный";
+const INVN={'1':'А: Долг 50%+50% доли','2':'Б: Возврат 100%, затем 50/50','3':'В: Долг 100%+33% доли'};
+(function(){var S=35000;for(var k in D){var rows=D[k];var cd=0;for(var i=0;i<rows.length;i++){var r=rows[i];if(r[12]===70000){r[12]=35000;r[17]+=S;cd+=S;r[18]+=cd;}}for(var i=0;i<rows.length;i++){rows[i][24]=(i>0?rows[i-1][24]:0)+Math.max(0,rows[i][22]);rows[i][25]=(i>0?rows[i-1][25]:0)+Math.max(0,rows[i][23]);}}["O_1","O_2","O_3"].forEach(function(k){var rows=D[k];for(var i=48;i<60;i++){var r=rows[i];var rt=3700/r[2],nv=Math.round(r[3]*rt);r[2]=3700;r[3]=nv;r[4]=Math.round(nv*0.13);r[6]=Math.round(r[6]*rt);r[8]=Math.round(nv*0.015);r[9]=Math.round(r[9]*rt);r[10]=Math.round(nv*0.01);r[17]=r[3]-r[4]-r[5]-r[6]-r[7]-r[8]-r[9]-r[10]-r[11]-r[12]-r[13]-r[14]-r[15]+r[16];}for(var i=48;i<rows.length;i++)rows[i][18]=rows[i-1][18]+rows[i][17];for(var i=48;i<rows.length;i++){rows[i][24]=(i>0?rows[i-1][24]:0)+Math.max(0,rows[i][22]);rows[i][25]=(i>0?rows[i-1][25]:0)+Math.max(0,rows[i][23]);}});["I_1","I_2","I_3"].forEach(function(k){var rows=D[k];for(var i=48;i<60;i++){var r=rows[i];var rt=3900/r[2],nv=Math.round(r[3]*rt);r[2]=3900;r[3]=nv;r[4]=Math.round(nv*0.13);r[6]=Math.round(r[6]*rt);r[8]=Math.round(nv*0.015);r[9]=Math.round(r[9]*rt);r[10]=Math.round(nv*0.01);r[17]=r[3]-r[4]-r[5]-r[6]-r[7]-r[8]-r[9]-r[10]-r[11]-r[12]-r[13]-r[14]-r[15]+r[16];}for(var i=48;i<rows.length;i++)rows[i][18]=rows[i-1][18]+rows[i][17];for(var i=48;i<rows.length;i++){rows[i][24]=(i>0?rows[i-1][24]:0)+Math.max(0,rows[i][22]);rows[i][25]=(i>0?rows[i-1][25]:0)+Math.max(0,rows[i][23]);}});for(var k in M){var lr=D[k][59];M[k].invT=lr[24];M[k].mgrT=lr[25];if(M[k].invT>0){M[k].roi=Math.round((M[k].invT-13000000)/130000);M[k].mult=Math.round(M[k].invT/13000000*100)/100;}M[k].cumIntr=lr[26];M[k].bizVal=Math.max(0,lr[17]*25);M[k].invBiz=Math.round(M[k].bizVal/2);M[k].mgrBiz=Math.round(M[k].bizVal/2);}})();
+var _s=document.createElement("style");_s.textContent=".tip-text{z-index:99999!important;}.hdr,.tabs,.t{overflow:visible!important;}";document.head.appendChild(_s);var _b=document.querySelectorAll(".t:not(.b)");if(_b[0])_b[0].textContent="\u041d\u0435\u0433\u0430\u0442\u0438\u0432\u043d\u044b\u0439";if(_b[1])_b[1].textContent="\u0411\u0430\u0437\u043e\u0432\u044b\u0439";if(_b[2])_b[2].textContent="\u041e\u043f\u0442\u0438\u043c\u0438\u0441\u0442\u0438\u0447\u043d\u044b\u0439";
 let cBF=0,cINV=0;
 function fmt(n){return typeof n==='number'?Math.round(n).toLocaleString('ru-RU'):n;}
 function key(){return BFK[cBF]+'_'+INVS[cINV];}
@@ -374,6 +204,10 @@ function tip(text){
   return '<span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-text">'+text+'</span></span>';
 }
 
+// === Нормализация налога к 8% ===
+(function(){
+  for(var k in D){D[k].forEach(function(row){var t=Math.round(row[3]*0.08);row[17]+=row[9]-t;row[9]=t;});}
+})();
 function renderKPI(){
   const m=M[key()],sid=INVS[cINV];
   if(!m)return;
@@ -428,169 +262,6 @@ function renderTable(){
 function update(){renderKPI();renderTable();}
 document.querySelectorAll('.t:not(.b)')[0].classList.add('a');
 update();
-</script>
-
-<!-- Three.js LEGO Explosion Animation -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<canvas id="legoCanvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;"></canvas>
-<script>
-(function(){
-  var canvas = document.getElementById('legoCanvas');
-  var renderer = new THREE.WebGLRenderer({canvas:canvas,alpha:true,antialias:true});
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-  renderer.setSize(window.innerWidth,window.innerHeight);
-  var scene = new THREE.Scene();
-  var camera = new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,1000);
-  camera.position.set(0,0,18);
-
-  var LEGO_COLORS = [0xFFD700,0xCC0000,0x0055A7,0x00AA44,0xFF8C00,0xFFFFFF,0x222222,0xE83030,0x2266CC];
-  var bricks = [];
-  var floaters = [];
-
-  // Create brick geometry (LEGO brick shape)
-  function makeBrick(w,h,d) {
-    var g = new THREE.BoxGeometry(w,h,d);
-    return g;
-  }
-
-  // PHASE 1: Explosion bricks (entrance)
-  var N_EXPLOSION = 60;
-  for(var i=0;i<N_EXPLOSION;i++) {
-    var w=0.4+Math.random()*0.8, h=0.3+Math.random()*0.4, d=0.4+Math.random()*0.8;
-    var mat = new THREE.MeshPhongMaterial({color:LEGO_COLORS[Math.floor(Math.random()*LEGO_COLORS.length)],shininess:80});
-    var mesh = new THREE.Mesh(makeBrick(w,h,d),mat);
-    // Start position: random around center
-    mesh.position.set((Math.random()-0.5)*2,(Math.random()-0.5)*2,(Math.random()-0.5)*2);
-    mesh.rotation.set(Math.random()*Math.PI,Math.random()*Math.PI,Math.random()*Math.PI);
-    // Velocity: explode outward
-    var speed = 0.2+Math.random()*0.4;
-    var theta = Math.random()*Math.PI*2;
-    var phi = Math.random()*Math.PI;
-    mesh.userData = {
-      vx:(Math.random()-0.5)*speed*3,
-      vy:(Math.random()-0.5)*speed*3,
-      vz:(Math.random()-0.5)*speed*2-0.1,
-      rx:(Math.random()-0.5)*0.15,
-      ry:(Math.random()-0.5)*0.15,
-      rz:(Math.random()-0.5)*0.15,
-      birth:0,
-      life:1.8+Math.random()*1.2,
-      type:'explosion'
-    };
-    scene.add(mesh);
-    bricks.push(mesh);
-  }
-
-  // PHASE 2: Floating background bricks
-  var N_FLOAT = 25;
-  for(var j=0;j<N_FLOAT;j++) {
-    var w2=0.3+Math.random()*0.6, h2=0.25+Math.random()*0.35, d2=0.3+Math.random()*0.6;
-    var mat2 = new THREE.MeshPhongMaterial({color:LEGO_COLORS[Math.floor(Math.random()*LEGO_COLORS.length)],shininess:60,transparent:true,opacity:0});
-    var mesh2 = new THREE.Mesh(makeBrick(w2,h2,d2),mat2);
-    var rx = (Math.random()-0.5)*30;
-    var ry = (Math.random()-0.5)*20;
-    mesh2.position.set(rx,ry,(Math.random()-0.5)*5-8);
-    mesh2.rotation.set(Math.random()*Math.PI,Math.random()*Math.PI,Math.random()*Math.PI);
-    mesh2.userData = {
-      rx:(Math.random()-0.5)*0.005,
-      ry:(Math.random()-0.5)*0.005,
-      rz:(Math.random()-0.5)*0.005,
-      vy:(Math.random()-0.5)*0.008,
-      vx:(Math.random()-0.5)*0.006,
-      ox:rx, oy:ry,
-      type:'float',
-      delay:2.5+j*0.1
-    };
-    scene.add(mesh2);
-    floaters.push(mesh2);
-  }
-
-  // Lighting
-  var amb = new THREE.AmbientLight(0xffffff,0.5);
-  scene.add(amb);
-  var dir = new THREE.DirectionalLight(0xFFD700,1.2);
-  dir.position.set(5,10,8);
-  scene.add(dir);
-  var dir2 = new THREE.DirectionalLight(0x4488ff,0.6);
-  dir2.position.set(-5,-3,-5);
-  scene.add(dir2);
-
-  var start = null;
-  var done = false;
-
-  function animate(ts) {
-    if(done) return;
-    requestAnimationFrame(animate);
-    if(!start) start=ts;
-    var t=(ts-start)/1000;
-
-    // Explosion phase
-    var allGone = true;
-    bricks.forEach(function(b){
-      var life = b.userData.life;
-      var age = t;
-      if(age < life) {
-        allGone = false;
-        var fade = 1-Math.pow(age/life,2);
-        b.material.transparent=true;
-        b.material.opacity=Math.max(0,fade);
-        b.position.x += b.userData.vx * (1-age/life);
-        b.position.y += b.userData.vy * (1-age/life);
-        b.position.z += b.userData.vz * (1-age/life);
-        b.rotation.x += b.userData.rx;
-        b.rotation.y += b.userData.ry;
-        b.rotation.z += b.userData.rz;
-        b.userData.vy -= 0.002; // gravity
-      } else {
-        b.material.opacity=0;
-      }
-    });
-
-    // Float phase
-    floaters.forEach(function(f){
-      var delay = f.userData.delay;
-      if(t > delay) {
-        var ft = t-delay;
-        var fadeIn = Math.min(ft/1.5,1)*0.18;
-        f.material.opacity=fadeIn;
-        f.position.x += f.userData.vx;
-        f.position.y += f.userData.vy;
-        f.rotation.x += f.userData.rx;
-        f.rotation.y += f.userData.ry;
-        f.rotation.z += f.userData.rz;
-        // Wrap around
-        if(f.position.y > 12) f.position.y=-12;
-        if(f.position.y < -12) f.position.y=12;
-        if(f.position.x > 18) f.position.x=-18;
-        if(f.position.x < -18) f.position.x=18;
-      }
-    });
-
-    // Stop explosion after 5s but keep floaters
-    if(t > 5 && allGone) {
-      // Keep only floaters running
-      bricks.forEach(function(b){scene.remove(b);});
-      bricks=[];
-    }
-
-    // Stop everything after 60s to save memory
-    if(t > 60) {
-      done=true;
-      canvas.style.display='none';
-      return;
-    }
-
-    renderer.render(scene,camera);
-  }
-
-  requestAnimationFrame(animate);
-
-  window.addEventListener('resize',function(){
-    camera.aspect=window.innerWidth/window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth,window.innerHeight);
-  });
-})();
 </script>
 </body>
 </html>

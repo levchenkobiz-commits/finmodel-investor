@@ -23,53 +23,48 @@ body {
   overflow-x: hidden;
 }
 
-/* --- LOADER: WALKING LEGO SHOES --- */
+/* --- LOADER: PREMIUM LEGO CROCS --- */
 #loader-overlay {
   position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
   background: var(--bg); z-index: 9999;
   display: flex; justify-content: center; align-items: center;
-  perspective: 800px;
+  perspective: 1200px;
   transition: opacity 0.8s ease-in-out;
 }
 .shoe-container {
-  position: relative; width: 200px; height: 200px;
+  position: relative; width: 300px; height: 200px;
   transform-style: preserve-3d;
-  transform: rotateX(20deg) rotateY(-20deg);
 }
-.shoe {
-  position: absolute; width: 80px; height: 40px;
-  background: var(--accent2); border-radius: 8px;
-  box-shadow: inset -5px -5px 15px rgba(0,0,0,0.4), 0 15px 25px rgba(0,0,0,0.8);
-  /* Studs */
+.croc-lego {
+  position: absolute; width: 150px; height: 150px;
+  transform-origin: bottom center;
 }
-.shoe::before {
-  content: ''; position: absolute; top: -10px; left: 10px;
-  width: 20px; height: 10px; background: var(--accent2); border-radius: 3px;
-  box-shadow: 40px 0 0 var(--accent2), inset -2px -2px 5px rgba(0,0,0,0.3);
-}
-.shoe-left { left: 0; top: 80px; animation: walkLeft 1.5s infinite linear; z-index: 2; }
-.shoe-right { left: 100px; top: 80px; animation: walkRight 1.5s infinite linear; animation-delay: 0.75s; z-index: 1; }
+.left-croc { left: 0; animation: premiumWalkLeft 1.2s infinite cubic-bezier(0.4, 0, 0.2, 1); z-index: 2; }
+.right-croc { left: 150px; animation: premiumWalkRight 1.2s infinite cubic-bezier(0.4, 0, 0.2, 1); animation-delay: 0.6s; z-index: 1; }
 
-@keyframes walkLeft {
-  0% { transform: translateZ(0) translateY(0) scale(1); z-index:2; }
-  25% { transform: translateZ(60px) translateY(-40px) scale(1.1); z-index:3; }
-  50% { transform: translateZ(120px) translateY(0) scale(1.2); z-index:2; }
-  75% { transform: translateZ(60px) translateY(0) scale(1.1); z-index:1; }
-  100% { transform: translateZ(0) translateY(0) scale(1); z-index:1; }
+@keyframes premiumWalkLeft {
+  0% { transform: translateZ(0) translateY(0) rotateX(0deg) scale(1); z-index: 2; }
+  15% { transform: translateZ(30px) translateY(-20px) rotateX(15deg) scale(1.05); z-index: 3; }
+  30% { transform: translateZ(60px) translateY(-30px) rotateX(25deg) scale(1.1); z-index: 3; }
+  50% { transform: translateZ(100px) translateY(0) rotateX(-5deg) scale(1.2); z-index: 2; }
+  60% { transform: translateZ(100px) translateY(5px) rotateX(0deg) scale(1.25); z-index: 1; }
+  100% { transform: translateZ(0) translateY(0) rotateX(0deg) scale(1); z-index: 1; }
 }
-@keyframes walkRight {
-  0% { transform: translateZ(0) translateY(0) scale(1); z-index:1; }
-  25% { transform: translateZ(60px) translateY(-40px) scale(1.1); z-index:3; }
-  50% { transform: translateZ(120px) translateY(0) scale(1.2); z-index:2; }
-  75% { transform: translateZ(60px) translateY(0) scale(1.1); z-index:1; }
-  100% { transform: translateZ(0) translateY(0) scale(1); z-index:1; }
+@keyframes premiumWalkRight {
+  0% { transform: translateZ(0) translateY(0) rotateX(0deg) scale(1); z-index: 1; }
+  15% { transform: translateZ(30px) translateY(-20px) rotateX(15deg) scale(1.05); z-index: 3; }
+  30% { transform: translateZ(60px) translateY(-30px) rotateX(25deg) scale(1.1); z-index: 3; }
+  50% { transform: translateZ(100px) translateY(0) rotateX(-5deg) scale(1.2); z-index: 2; }
+  60% { transform: translateZ(100px) translateY(5px) rotateX(0deg) scale(1.25); z-index: 1; }
+  100% { transform: translateZ(0) translateY(0) rotateX(0deg) scale(1); z-index: 1; }
 }
 .shoe-smash {
-  animation: smashScreen 1.2s forwards cubic-bezier(0.7, 0, 0.2, 1) !important;
+  animation: premiumSmash 1.5s forwards cubic-bezier(0.8, 0, 0.2, 1) !important;
 }
-@keyframes smashScreen {
-  0% { transform: translateZ(120px) translateY(0) scale(1.2); }
-  100% { transform: translateZ(1000px) translateY(100px) scale(50); opacity: 0; }
+@keyframes premiumSmash {
+  0% { transform: translateZ(100px) translateY(0) rotateX(0deg) scale(1.2); filter: blur(0px); }
+  50% { transform: translateZ(400px) translateY(-50px) rotateX(20deg) scale(5); filter: blur(2px); }
+  100% { transform: translateZ(1500px) translateY(100px) rotateX(-10deg) scale(40); filter: blur(10px); opacity: 0; }
 }
 
 /* --- MAIN LAYOUT --- */
@@ -115,11 +110,11 @@ p { font-size: 1.25rem; line-height: 1.6; color: #a0a0a0; margin-bottom: 1.5rem;
 
 .glass-card {
   background: rgba(17, 17, 17, 0.6); backdrop-filter: blur(16px);
-  border: 1px solid var(--border); border-radius: 24px;
-  padding: 3rem; transition: transform 0.4s ease, border-color 0.4s ease;
+  border: 1px solid var(--border); border-radius: 40px;
+  padding: 3rem; transition: transform 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
   position: relative; overflow: hidden;
 }
-.glass-card:hover { transform: translateY(-10px); border-color: rgba(204, 255, 0, 0.3); }
+.glass-card:hover { transform: translateY(-10px); border-color: rgba(204, 255, 0, 0.3); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
 
 .stat-number { font-size: 4rem; font-weight: 900; color: var(--accent); line-height: 1; margin-bottom: 1rem; }
 .stat-number.red { color: var(--accent2); }
@@ -153,8 +148,58 @@ tr:hover td { background: #1a1a1a; }
 <!-- LOADER -->
 <div id="loader-overlay">
   <div class="shoe-container">
-    <div class="shoe shoe-left" id="s-left"></div>
-    <div class="shoe shoe-right" id="s-right"></div>
+    <div class="croc-lego left-croc" id="s-left">
+      <svg viewBox="0 0 200 150" width="100%" height="100%" style="overflow:visible;">
+        <path d="M 50 85 L 150 85 L 160 125 L 40 125 Z" fill="rgba(0,0,0,0.4)" />
+        <path d="M 50 80 L 150 80 L 160 120 L 40 120 Z" fill="#b30000" />
+        <path d="M 50 80 L 150 80 L 130 30 L 70 30 Z" fill="#e60000" />
+        <ellipse cx="85" cy="45" rx="10" ry="4" fill="#ff3333" />
+        <rect x="75" y="40" width="20" height="5" fill="#e60000" />
+        <ellipse cx="85" cy="40" rx="10" ry="4" fill="#cc0000" />
+        <ellipse cx="115" cy="45" rx="10" ry="4" fill="#ff3333" />
+        <rect x="105" y="40" width="20" height="5" fill="#e60000" />
+        <ellipse cx="115" cy="40" rx="10" ry="4" fill="#cc0000" />
+        <ellipse cx="75" cy="70" rx="14" ry="5" fill="#ff3333" />
+        <rect x="61" y="65" width="28" height="5" fill="#e60000" />
+        <ellipse cx="75" cy="65" rx="14" ry="5" fill="#cc0000" />
+        <ellipse cx="125" cy="70" rx="14" ry="5" fill="#ff3333" />
+        <rect x="111" y="65" width="28" height="5" fill="#e60000" />
+        <ellipse cx="125" cy="65" rx="14" ry="5" fill="#cc0000" />
+        <path d="M 70 30 L 130 30 L 120 10 L 80 10 Z" fill="#660000" />
+        <path d="M 45 95 Q 100 20 155 95" fill="none" stroke="#e60000" stroke-width="12" stroke-linecap="round" />
+        <rect x="85" y="45" width="30" height="12" fill="#000" rx="2" />
+        <rect x="86" y="46" width="28" height="10" fill="#e60000" />
+        <text x="88" y="54" fill="#ffcc00" font-family="'Inter', sans-serif" font-weight="900" font-size="8">LEGO</text>
+        <ellipse cx="152" cy="100" rx="4" ry="8" fill="#660000" transform="rotate(-15 152 100)" />
+        <ellipse cx="145" cy="90" rx="3" ry="6" fill="#660000" transform="rotate(-15 145 90)" />
+      </svg>
+    </div>
+    <div class="croc-lego right-croc" id="s-right">
+      <svg viewBox="0 0 200 150" width="100%" height="100%" style="overflow:visible;">
+        <path d="M 50 85 L 150 85 L 160 125 L 40 125 Z" fill="rgba(0,0,0,0.4)" />
+        <path d="M 50 80 L 150 80 L 160 120 L 40 120 Z" fill="#b30000" />
+        <path d="M 50 80 L 150 80 L 130 30 L 70 30 Z" fill="#e60000" />
+        <ellipse cx="85" cy="45" rx="10" ry="4" fill="#ff3333" />
+        <rect x="75" y="40" width="20" height="5" fill="#e60000" />
+        <ellipse cx="85" cy="40" rx="10" ry="4" fill="#cc0000" />
+        <ellipse cx="115" cy="45" rx="10" ry="4" fill="#ff3333" />
+        <rect x="105" y="40" width="20" height="5" fill="#e60000" />
+        <ellipse cx="115" cy="40" rx="10" ry="4" fill="#cc0000" />
+        <ellipse cx="75" cy="70" rx="14" ry="5" fill="#ff3333" />
+        <rect x="61" y="65" width="28" height="5" fill="#e60000" />
+        <ellipse cx="75" cy="65" rx="14" ry="5" fill="#cc0000" />
+        <ellipse cx="125" cy="70" rx="14" ry="5" fill="#ff3333" />
+        <rect x="111" y="65" width="28" height="5" fill="#e60000" />
+        <ellipse cx="125" cy="65" rx="14" ry="5" fill="#cc0000" />
+        <path d="M 70 30 L 130 30 L 120 10 L 80 10 Z" fill="#660000" />
+        <path d="M 45 95 Q 100 20 155 95" fill="none" stroke="#e60000" stroke-width="12" stroke-linecap="round" />
+        <rect x="85" y="45" width="30" height="12" fill="#000" rx="2" />
+        <rect x="86" y="46" width="28" height="10" fill="#e60000" />
+        <text x="88" y="54" fill="#ffcc00" font-family="'Inter', sans-serif" font-weight="900" font-size="8">LEGO</text>
+        <ellipse cx="152" cy="100" rx="4" ry="8" fill="#660000" transform="rotate(-15 152 100)" />
+        <ellipse cx="145" cy="90" rx="3" ry="6" fill="#660000" transform="rotate(-15 145 90)" />
+      </svg>
+    </div>
   </div>
 </div>
 

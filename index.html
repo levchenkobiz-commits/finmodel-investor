@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -816,8 +816,8 @@ update();
       
       // Update light orb position
       if (orb) {
-        orb.style.left = ${x}px;
-        orb.style.top = ${y}px;
+        orb.style.left = x + 'px';
+        orb.style.top = y + 'px';
       }
       
       // Update interactive 3D parallax on emblem container
@@ -833,8 +833,8 @@ update();
         const tiltX = (deltaY / window.innerHeight) * 35; // max 35 deg
         const tiltY = -(deltaX / window.innerWidth) * 35;
         
-        emblem.style.transform = otate(deg) rotateX(deg) rotateY(deg) translateZ(20px);
-        emblemInner.style.transform = scale(1.08) translate3d(px, px, 30px);
+        emblem.style.transform = 'rotate(' + timeRotation() + 'deg) rotateX(' + tiltX + 'deg) rotateY(' + tiltY + 'deg) translateZ(20px)';
+        emblemInner.style.transform = 'scale(1.08) translate3d(' + (-deltaX * 0.08) + 'px, ' + (-deltaY * 0.08) + 'px, 30px)';
       }
     });
     

@@ -233,11 +233,13 @@ function tip(text){
 (function(){for(var k in D){D[k].forEach(function(row){var t=Math.round(row[3]*0.08);row[17]+=row[9]-t;row[9]=t;});}}());
 
 // ── COMPUTE KPI FROM ROWS (supports bar toggle) ──
-function computeKPI(rows, sid){
+function computeKPI(rows, sid, extraInv){
+  extraInv=extraInv||0;
   var RATE=0.165/12;
+  var TOTAL_INV=13000000+extraInv;
   var invT=0,mgrT=0,cumIntr=0,debt;
   var invP='нет',mgrP='нет';
-  if(sid===1) debt=6500000; else debt=13000000;
+  if(sid===1) debt=6500000+Math.round(extraInv/2); else debt=TOTAL_INV;
   for(var i=0;i<rows.length;i++){
     var r=rows[i],mo=r[0],profit=r[17];
     var inv_mo=0,mgr_mo=0,intr=0,principal=0;
@@ -283,15 +285,15 @@ function computeKPI(rows, sid){
   var inv_share=sid===3?0.25:0.5;
   var invBiz=Math.round(bizVal*inv_share);
   var mgrBiz=bizVal-invBiz;
-  var roi=invT>0?Math.round((invT-13000000)/130000):0;
-  var mult=invT>0?Math.round(invT/13000000*100)/100:0;
+  var roi=invT>0?Math.round((invT-TOTAL_INV)/(TOTAL_INV/100)):0;
+  var mult=invT>0?Math.round(invT/TOTAL_INV*100)/100:0;
   return {invP:invP,mgrP:mgrP,invT:invT,mgrT:mgrT,roi:roi,mult:mult,bizVal:bizVal,invBiz:invBiz,mgrBiz:mgrBiz,cumIntr:cumIntr};
 }
 function renderKPI(){
   const sid=INVS[cINV];
-  const m=barOn?computeKPI(getRows(key()),sid):M[key()];
+  const m=barOn?computeKPI(getRows(key()),sid,1000000):M[key()];
   if(!m)return;
-  document.getElementById('desc').innerHTML='<b>'+INVN[sid]+'</b> — '+DESC[sid];
+  document.getElementById('desc').innerHTML='<b>'+INVN[sid]+'</b> — '+DESC[sid]+(barOn?' <span style="color:#4caf50;font-weight:900">| 🍺 +1 000 000 ₽ инвестиций (Алко-бар)</span>':'');
   const rc=m.roi>=0?'gr':'rd';
   const bizFmt=m.bizVal>0?fmt(m.bizVal)+' руб.':'убыток';
   const tipItogo=tip('✅ Проценты инвестору включены | ❌ Доля при продаже не включена');
@@ -389,16 +391,16 @@ update();
             <th>Заведение</th>
             <th>Кальянов/день</th>
             <th>Выручка/мес</th>
-            <th>Статус</th>
+            
           </tr></thead>
           <tbody>
-            <tr class="comp-top"><td>Keidj</td><td>85–100</td><td>10 000 000+ ₽</td><td>Конкурент</td></tr>
-            <tr class="comp-top"><td>Tulum</td><td>80–90</td><td>9 000 000+ ₽</td><td>Конкурент</td></tr>
-            <tr class="comp-top"><td>HP Wild</td><td>85–100</td><td>10 000 000+ ₽</td><td>Сеть HP</td></tr>
-            <tr><td>HP Baza</td><td>60</td><td>4 800 000+ ₽</td><td>Сеть HP</td></tr>
-            <tr><td>HP Lago</td><td>50</td><td>4 500 000+ ₽</td><td>Сеть HP</td></tr>
-            <tr class="comp-near"><td>Ostrov Нежинская</td><td>40–50</td><td>4 000 000+ ₽</td><td>⚠ Рядом</td></tr>
-            <tr><td>Ostrov Озёрная</td><td>40–50</td><td>4 200 000+ ₽</td><td>Конкурент</td></tr>
+            <tr class="comp-top"><td>Keidj</td><td>85–100</td><td>10 000 000+ ₽</td></tr>
+            <tr class="comp-top"><td>Tulum</td><td>80–90</td><td>9 000 000+ ₽</td></tr>
+            <tr class="comp-top"><td>HP Wild</td><td>85–100</td><td>10 000 000+ ₽</td></tr>
+            <tr><td>HP Baza</td><td>60</td><td>4 800 000+ ₽</td></tr>
+            <tr><td>HP Lago</td><td>50</td><td>4 500 000+ ₽</td></tr>
+            <tr class="comp-near"><td>Ostrov Нежинская</td><td>40–50</td><td>4 000 000+ ₽</td></tr>
+            <tr><td>Ostrov Озёрная</td><td>40–50</td><td>4 200 000+ ₽</td></tr>
           </tbody>
         </table>
       </div>

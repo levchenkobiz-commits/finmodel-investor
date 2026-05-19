@@ -214,18 +214,20 @@ const DESC={
   '3':'В: Долг 13 000 000 руб под 16.5%/год. Вся прибыль на погашение. После выплаты: инвестор 25% прибыли, управляющий 75%. Провал: 6 500 000 + проценты.'
 };
 const INVN={'1':'А: Долг 50%+50% доли','2':'Б: Возврат 100%, затем 50/50','3':'В: Долг 100%+25% доли'};
-// PATCH_RENT_10PCT
+// PATCH_RENT_10PCT_v2
 (function(){
-  ['N_1','N_2','N_3','B_1','B_2','B_3','O_1','O_2','O_3'].forEach(function(k){
+  var ALL_KEYS=[];
+  for(var k in D){ if(k.indexOf('_')>=0) ALL_KEYS.push(k); }
+  ALL_KEYS.forEach(function(k){
     var rows=D[k];
     for(var i=0;i<rows.length;i++){
       var r=rows[i];
-      if(r[7]>350000){
-        var oldRent=r[7];
-        var newRent=Math.round(oldRent*10/15);
-        r[7]=newRent;
-        r[17]+=oldRent-newRent;
-      }
+      var mo=r[0];
+      var minRent=mo<=12?350000:mo<=24?400000:450000;
+      var rentByPct=Math.round(r[3]*0.10);
+      var newRent=Math.max(minRent,rentByPct);
+      var oldRent=r[7];
+      if(newRent!==oldRent){ r[7]=newRent; r[17]+=oldRent-newRent; }
     }
     for(var i=1;i<rows.length;i++) rows[i][18]=rows[i-1][18]+rows[i][17];
     for(var i=0;i<rows.length;i++){
@@ -418,23 +420,28 @@ function toggleBar(){
 function getRows(k){
   var rows=D[k];
   if(!barOn)return rows;
-  var rentRate=(k[0]==='I')?0:0.10;
   var bonusFloor=220000;
   return rows.map(function(r){
     var nr=r.slice();
     var extra=nr[1]*200*30;
     nr[2]=nr[2]+200;
     nr[3]=nr[3]+extra;
+    // Пересчёт переменных затрат от новой выручки
     var dCOGS=Math.round(nr[3]*0.13)-r[4];
     var dAcqui=Math.round(nr[3]*0.015)-r[8];
     var dTax=Math.round(nr[3]*0.08)-r[9];
     var dAmort=Math.round(nr[3]*0.01)-r[10];
     var newBonus=r[6]>bonusFloor?Math.round(nr[3]*0.12):r[6];
     var dBonus=newBonus-r[6];
-    var dRent=r[7]>350000?Math.round(extra*rentRate):0;
+    // Аренда: 10% от выручки, минималки по годам (для всех сценариев)
+    var mo=nr[0];
+    var minRent=mo<=12?350000:mo<=24?400000:450000;
+    var rentByPct=Math.round(nr[3]*0.10);
+    var newRent=Math.max(minRent,rentByPct);
+    var dRent=newRent-r[7];
     nr[4]=r[4]+dCOGS;
     nr[6]=newBonus;
-    nr[7]=r[7]+dRent;
+    nr[7]=newRent;
     nr[8]=r[8]+dAcqui;
     nr[9]=r[9]+dTax;
     nr[10]=r[10]+dAmort;

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -336,6 +336,12 @@ function renderKPI(){
 function renderTable(){
   const rows=getRows(key());
   if(!rows)return;
+  const sid=INVS[cINV];
+  const RATE=0.165/12;
+  const INV=barOn?14000000:13000000;
+  // Для сценария А пересчитываем долг построчно
+  let runDebt=0;
+  if(sid===1) runDebt=Math.round(INV*0.5);
   let repM=null;
   rows.forEach(r=>{if(r[21]===0&&repM===null&&r[0]>1)repM=r[0];});
   let h='<table><thead><tr>';
@@ -346,19 +352,50 @@ function renderTable(){
   h+='</tr></thead><tbody>';
   rows.forEach(r=>{
     const mo=r[0];
+    const profit=r[17];
+    let dispIntr=r[19],dispTelo=r[20],dispInv=r[22],dispMgr=r[23];
+    if(sid===1){
+      let intr1=runDebt>0?Math.round(runDebt*RATE):0;
+      dispIntr=intr1;
+      if(profit>0){
+        let inv50=Math.round(profit*0.5);
+        let mgr50=profit-inv50;
+        dispInv=inv50;
+        if(runDebt>0){
+          let ip=Math.min(mgr50,intr1);
+          let telo=Math.max(0,Math.min(mgr50-ip,runDebt));
+          dispTelo=telo;
+          let excess=mgr50-(ip+telo);
+          runDebt=Math.max(0,runDebt-telo+(intr1-ip));
+          dispMgr=runDebt===0&&excess>0?excess:0;
+        } else {
+          dispTelo=0; dispMgr=mgr50;
+        }
+      } else {
+        if(runDebt>0) runDebt+=intr1;
+        dispIntr=intr1; dispTelo=0; dispInv=0; dispMgr=0;
+      }
+    }
     h+='<tr class="'+(mo===repM?'repaid':'')+'">';
     r.forEach((v,ci)=>{
       let c=CH.has(ci)?'ch':'';
       let dispV=v;
-      if(ci===22&&r[21]>0)dispV=Math.max(0,r[17]);
-      if(ci===23&&r[21]>0)dispV=0;
+      if(sid===1){
+        if(ci===19)dispV=dispIntr;
+        if(ci===20)dispV=dispTelo;
+        if(ci===22)dispV=dispInv;
+        if(ci===23)dispV=dispMgr;
+      } else {
+        if(ci===22&&r[21]>0)dispV=Math.max(0,r[17]);
+        if(ci===23&&r[21]>0)dispV=0;
+      }
       if(ci===17||ci===18)c+=(v<0?' cn':'');
       if(ci===22)c='ci';
       if(ci===23)c=(v<0?'cn':'cm');
       if(ci===24)c='ci';
       if(ci===25)c=(v<0?'cn':'cm');
       if(ci===26)c='or';
-      h+='<td class="'+c.trim()+'">'+(ci===0?(mo===repM?'★ '+mo:String(mo)):fmt(dispV))+'</td>';
+      h+='<td class="'+c.trim()+'">'+(ci===0?(mo===repM?'<0x2605> '+mo:String(mo)):fmt(dispV))+'</td>';
     });
     h+='</tr>';
   });

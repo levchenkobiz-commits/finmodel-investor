@@ -349,13 +349,16 @@ function renderTable(){
     h+='<tr class="'+(mo===repM?'repaid':'')+'">';
     r.forEach((v,ci)=>{
       let c=CH.has(ci)?'ch':'';
+      let dispV=v;
+      if(ci===22&&r[21]>0)dispV=Math.max(0,r[17]);
+      if(ci===23&&r[21]>0)dispV=0;
       if(ci===17||ci===18)c+=(v<0?' cn':'');
       if(ci===22)c='ci';
       if(ci===23)c=(v<0?'cn':'cm');
       if(ci===24)c='ci';
       if(ci===25)c=(v<0?'cn':'cm');
       if(ci===26)c='or';
-      h+='<td class="'+c.trim()+'">'+(ci===0?(mo===repM?'★ '+mo:String(mo)):fmt(v))+'</td>';
+      h+='<td class="'+c.trim()+'">'+(ci===0?(mo===repM?'★ '+mo:String(mo)):fmt(dispV))+'</td>';
     });
     h+='</tr>';
   });

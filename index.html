@@ -6,7 +6,6 @@
 <title>Hookah Place West</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 :root {
   --red: #e3272b;
@@ -23,31 +22,323 @@
 html{scroll-behavior:smooth;}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow-x:hidden;}
 
-/* LOADER */
-#loader{position:fixed;inset:0;background:#0a0a0a;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.6s ease;overflow:hidden;}
-#loader.hide{opacity:0;pointer-events:none;}
-#loader-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;}
-.loader-text{color:var(--red);font-family:'Bebas Neue',sans-serif;font-size:2.5rem;letter-spacing:4px;z-index:2;position:absolute;bottom:15%;animation:pulse 1s ease-in-out infinite;text-shadow: 0 0 20px rgba(227, 39, 43, 0.4);}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+/* NEW PREMIUM LOADER & SHUTTERS */
+#loader {
+  position: fixed;
+  inset: 0;
+  background: transparent;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: all;
+}
 
-/* TICKER */
-.ticker{background:var(--red);padding:10px 0;overflow:hidden;white-space:nowrap;position:relative;}
-.ticker-inner{display:inline-block;animation:ticker 20s linear infinite;}
-.ticker-inner span{display:inline-flex;align-items:center;gap:12px;padding:0 40px;font-weight:700;font-size:0.95rem;letter-spacing:1px;color:#fff;}
-.ticker-logo{width:22px;height:22px;vertical-align:middle;flex-shrink:0;}
+.shutter {
+  position: absolute;
+  top: 0;
+  width: 50.5%;
+  height: 100%;
+  background: #050505;
+  z-index: 1;
+  transition: transform 1.2s cubic-bezier(0.85, 0, 0.15, 1);
+}
+.shutter.left {
+  left: 0;
+  transform-origin: left center;
+  border-right: 1px solid rgba(227, 39, 43, 0.15);
+}
+.shutter.right {
+  right: 0;
+  transform-origin: right center;
+  border-left: 1px solid rgba(227, 39, 43, 0.15);
+}
 
-@keyframes ticker{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+#loader.hide .shutter.left {
+  transform: translateX(-100%);
+}
+#loader.hide .shutter.right {
+  transform: translateX(100%);
+}
+#loader.hide {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease 1.2s;
+}
 
-/* HERO */
-.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:80px 60px;position:relative;overflow:hidden;}
-.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 50%,rgba(227,39,43,0.15) 0%,transparent 70%);}
-.hero-badge{display:inline-block;background:var(--red);color:#fff;padding:6px 18px;border-radius:4px;font-size:0.8rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:24px;}
-.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(3.5rem,8vw,8rem);line-height:0.9;margin-bottom:32px;position:relative;}
-.hero h1 span{color:var(--red);}
-.hero-sub{font-size:1.2rem;color:var(--muted);max-width:560px;line-height:1.7;margin-bottom:48px;}
-.hero-stats{display:flex;gap:48px;flex-wrap:wrap;}
-.hero-stat .num{font-family:'Bebas Neue',sans-serif;font-size:3rem;color:var(--red);line-height:1;}
-.hero-stat .lbl{font-size:0.85rem;color:var(--muted);margin-top:4px;}
+.loader-grid-line {
+  position: absolute;
+  background: rgba(227, 39, 43, 0.08);
+  z-index: 2;
+  transition: opacity 0.8s ease;
+}
+.loader-grid-line.hor {
+  left: 0;
+  right: 0;
+  height: 1px;
+}
+.loader-grid-line.ver {
+  top: 0;
+  bottom: 0;
+  width: 1px;
+}
+.loader-grid-line.hor-1 { top: 30%; }
+.loader-grid-line.hor-2 { top: 70%; }
+.loader-grid-line.ver-1 { left: 30%; }
+.loader-grid-line.ver-2 { left: 70%; }
+
+.loader-counter-container {
+  display: flex;
+  align-items: baseline;
+  z-index: 3;
+  font-family: 'Inter', sans-serif;
+  font-weight: 900;
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+.loader-counter {
+  font-size: clamp(5rem, 15vw, 11rem);
+  line-height: 0.8;
+  letter-spacing: -4px;
+  text-shadow: 0 0 40px rgba(227, 39, 43, 0.2);
+}
+.loader-percent {
+  font-size: clamp(2rem, 5vw, 4.5rem);
+  color: var(--red);
+  margin-left: 5px;
+}
+
+.loader-brand-container {
+  margin-top: 30px;
+  display: flex;
+  gap: 15px;
+  z-index: 3;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.2rem;
+  letter-spacing: 4px;
+}
+.loader-brand-container .word {
+  display: inline-flex;
+  overflow: hidden;
+}
+.loader-brand-container .word.accent {
+  color: var(--red);
+}
+.loader-brand-container .char {
+  display: inline-block;
+  transform: translateY(100%);
+  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* NEW HIGH-END HERO SECTION */
+.hero {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  align-items: center;
+  padding: 120px 80px 80px 80px;
+  position: relative;
+  overflow: hidden;
+  gap: 40px;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 80% 50%, rgba(227, 39, 43, 0.12) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero-orb {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(227, 39, 43, 0.12) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  left: -9999px;
+  top: -9999px;
+  transition: left 0.15s ease-out, top 0.15s ease-out;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(227, 39, 43, 0.1);
+  border: 1px solid rgba(227, 39, 43, 0.3);
+  color: #ffffff;
+  padding: 8px 18px;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+  width: fit-content;
+}
+.hero-badge::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: var(--red);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--red);
+  animation: badge-pulse 1.5s infinite alternate;
+}
+@keyframes badge-pulse {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  100% { transform: scale(1.3); opacity: 1; }
+}
+
+.hero h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(4rem, 9vw, 9rem);
+  line-height: 0.85;
+  margin-bottom: 24px;
+  letter-spacing: -2px;
+  text-transform: uppercase;
+}
+.hero h1 span {
+  color: var(--red);
+  text-shadow: 0 0 40px rgba(227, 39, 43, 0.3);
+}
+
+.hero-sub {
+  font-size: 1.15rem;
+  color: var(--muted);
+  max-width: 600px;
+  line-height: 1.6;
+  margin-bottom: 40px;
+}
+
+.hero-actions {
+  margin-bottom: 48px;
+}
+.hero-btn {
+  display: inline-block;
+  background: var(--red);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding: 16px 36px;
+  border: 2px solid var(--red);
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 6px 6px 0px #000000, 6px 6px 0px 2px var(--red);
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  position: relative;
+}
+.hero-btn:hover {
+  transform: translate(3px, 3px);
+  box-shadow: 2px 2px 0px #000000, 2px 2px 0px 2px var(--red);
+  background: #ffffff;
+  color: #000000;
+  border-color: #ffffff;
+}
+
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  max-width: 550px;
+}
+.hero-stat {
+  background: rgba(20, 20, 20, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 20px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  transition: border-color 0.3s, transform 0.3s;
+}
+.hero-stat:hover {
+  border-color: rgba(227, 39, 43, 0.3);
+  transform: translateY(-2px);
+}
+.hero-stat .num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.8rem;
+  color: var(--red);
+  line-height: 1;
+}
+.hero-stat .lbl {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Right Side Visuals */
+.hero-visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+.hero-emblem-container {
+  position: relative;
+  width: min(320px, 80vw);
+  height: min(320px, 80vw);
+  cursor: pointer;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+.hero-emblem {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px dashed rgba(227, 39, 43, 0.4);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s ease-out;
+  transform-style: preserve-3d;
+}
+.hero-emblem-inner {
+  width: 80%;
+  height: 80%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #1a1a1a 0%, #000000 100%);
+  border: 2px solid var(--red);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 30px rgba(227, 39, 43, 0.2), inset 0 0 20px rgba(227, 39, 43, 0.1);
+  transition: transform 0.5s ease;
+  transform-style: preserve-3d;
+}
+.hero-emblem-inner svg {
+  width: 50%;
+  height: 50%;
+  fill: var(--red);
+  filter: drop-shadow(0 0 15px var(--red));
+  animation: logo-glow 3s ease-in-out infinite alternate;
+}
+@keyframes logo-glow {
+  0% { filter: drop-shadow(0 0 8px var(--red)); opacity: 0.85; }
+  100% { filter: drop-shadow(0 0 22px var(--red)); opacity: 1; }
+}
 
 /* SECTION */
 section{padding:80px 60px;}
@@ -136,8 +427,28 @@ footer p{font-size:0.85rem;color:var(--muted);}
 
 <!-- LOADER -->
 <div id="loader">
-  <canvas id="loader-canvas"></canvas>
-  <div class="loader-text">HOOKAH PLACE WEST</div>
+  <!-- Split Shutters -->
+  <div class="shutter left"></div>
+  <div class="shutter right"></div>
+  
+  <!-- Brutalist wireframe grid lines -->
+  <div class="loader-grid-line hor hor-1"></div>
+  <div class="loader-grid-line hor hor-2"></div>
+  <div class="loader-grid-line ver ver-1"></div>
+  <div class="loader-grid-line ver ver-2"></div>
+  
+  <!-- Dynamic ticker counter -->
+  <div class="loader-counter-container">
+    <div class="loader-counter">00</div>
+    <div class="loader-percent">%</div>
+  </div>
+  
+  <!-- High-impact character reveal container -->
+  <div class="loader-brand-container">
+    <span class="word"><span class="char">H</span><span class="char">O</span><span class="char">O</span><span class="char">K</span><span class="char">A</span><span class="char">H</span></span>
+    <span class="word"><span class="char">P</span><span class="char">L</span><span class="char">A</span><span class="char">C</span><span class="char">E</span></span>
+    <span class="word accent"><span class="char">W</span><span class="char">E</span><span class="char">S</span><span class="char">T</span></span>
+  </div>
 </div>
 
 <!-- TICKER -->
@@ -154,14 +465,47 @@ footer p{font-size:0.85rem;color:var(--muted);}
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-badge">Инвестиционное предложение</div>
-  <h1>HOOKAH<br>PLACE<br><span>WEST</span></h1>
-  <p class="hero-sub">Первый кальянный бар сети Hookah Place в районе Очаково-Матвеевский. Население 160 000 человек, ни одного сетевого конкурента в шаговой доступности.</p>
-  <div class="hero-stats">
-    <div class="hero-stat"><div class="num">2M+</div><div class="lbl">Целевая чистая прибыль / мес</div></div>
-    <div class="hero-stat"><div class="num">160K</div><div class="lbl">Жителей в радиусе</div></div>
-    <div class="hero-stat"><div class="num">50+</div><div class="lbl">Кальянных мест</div></div>
-    <div class="hero-stat"><div class="num">5 лет</div><div class="lbl">Опыта в индустрии</div></div>
+  <!-- Interactive radial background cursor light orb -->
+  <div class="hero-orb"></div>
+  
+  <div class="hero-content">
+    <div class="hero-badge">Инвестиционное предложение 2026</div>
+    <h1>HOOKAH<br>PLACE<br><span>WEST</span></h1>
+    <p class="hero-sub">Первый премиальный кальянный бар легендарной сети Hookah Place в районе Очаково-Матвеевский. Огромный охват в 160 000 жителей без прямых сетевых конкурентов в шаговой доступности. Высокий потенциал доходности с окупаемостью от 24 месяцев.</p>
+    
+    <div class="hero-actions">
+      <a href="#advantages" class="hero-btn">Подробнее о проекте</a>
+    </div>
+    
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="num">0M+</div>
+        <div class="lbl">Чистая прибыль / мес</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">0K</div>
+        <div class="lbl">Жителей в радиусе</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">0+</div>
+        <div class="lbl">Кальянных мест</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">0 лет</div>
+        <div class="lbl">Опыта в индустрии</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="hero-visual">
+    <div class="hero-emblem-container">
+      <div class="hero-emblem"></div>
+      <div class="hero-emblem-inner">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+          <path d="M38.09,1.44 A12,12 0 0,0 61.91,1.44 A50,50 0 0,1 98.56,38.09 A12,12 0 0,0 98.56,61.91 A50,50 0 0,1 61.91,98.56 A12,12 0 0,0 38.09,98.56 A50,50 0 0,1 1.44,61.91 A12,12 0 0,0 1.44,38.09 A50,50 0 0,1 38.09,1.44 Z" />
+        </svg>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -366,444 +710,145 @@ update();
 
 <script>
 (function() {
-  const canvas = document.getElementById('loader-canvas');
   const loaderEl = document.getElementById('loader');
+  const counterEl = document.querySelector('.loader-counter');
+  const chars = document.querySelectorAll('.loader-brand-container .char');
   
-  // Set up Three.js scene
-  const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x0a0a0a, 0.015);
+  // Disable scroll during loading
+  document.body.style.overflow = 'hidden';
   
-  // Camera
-  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
-  camera.position.set(0, 5, 25);
-  camera.lookAt(0, 0.4, 0);
+  // Lift brand characters with a staggering delay
+  setTimeout(() => {
+    chars.forEach((char, index) => {
+      setTimeout(() => {
+        char.style.transform = 'translateY(0)';
+      }, index * 40);
+    });
+  }, 300);
   
-  // Renderer
-  const renderer = new THREE.WebGLRenderer({
-    canvas: canvas,
-    antialias: true,
-    alpha: true
-  });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  // Dynamic Loading Counter (0 to 100)
+  let count = 0;
+  const duration = 1800; // 1.8 seconds loading
+  const startTime = performance.now();
   
-  // Resize handler
-  window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  });
-  
-  // Lights
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.35);
-  scene.add(ambientLight);
-  
-  const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
-  dirLight.position.set(10, 20, 10);
-  dirLight.castShadow = true;
-  dirLight.shadow.mapSize.width = 1024;
-  dirLight.shadow.mapSize.height = 1024;
-  dirLight.shadow.bias = -0.001;
-  scene.add(dirLight);
-  
-  // Soft red point light under the shoes to give that neon brutalist glow
-  const pointLight = new THREE.PointLight(0xe3272b, 2.5, 30);
-  pointLight.position.set(0, 1, 0);
-  scene.add(pointLight);
-  
-  // Grid helper (brutalist floor)
-  const gridHelper = new THREE.GridHelper(60, 30, 0xe3272b, 0x222222);
-  gridHelper.position.y = -3;
-  scene.add(gridHelper);
-  
-  // LEGO Logo Texture Generator
-  function createLegoLogoTexture() {
-    const canvas = document.createElement('canvas');
-    canvas.width = 128;
-    canvas.height = 128;
-    const ctx = canvas.getContext('2d');
+  function updateCounter(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
     
-    // Red background
-    ctx.fillStyle = '#e3000b';
-    ctx.fillRect(0, 0, 128, 128);
+    // Ease-out loading speed
+    const easeProgress = 1 - Math.pow(1 - progress, 3);
+    count = Math.floor(easeProgress * 100);
     
-    // Black border
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 6;
-    ctx.strokeRect(3, 3, 122, 122);
-    
-    // Yellow oval
-    ctx.save();
-    ctx.translate(64, 64);
-    ctx.rotate(-0.08);
-    ctx.scale(1.2, 0.75);
-    ctx.beginPath();
-    ctx.arc(0, 0, 42, 0, Math.PI * 2);
-    ctx.fillStyle = '#ffd700';
-    ctx.fill();
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 6;
-    ctx.stroke();
-    ctx.restore();
-    
-    // "LEGO" text
-    ctx.save();
-    ctx.font = 'italic bold 32px "Arial Black", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.translate(64, 66);
-    ctx.rotate(-0.06);
-    
-    ctx.fillStyle = '#000000';
-    for (let dx = -3; dx <= 3; dx++) {
-      for (let dy = -3; dy <= 3; dy++) {
-        if (Math.abs(dx) + Math.abs(dy) > 0) {
-          ctx.fillText('LEGO', dx, dy);
-        }
-      }
+    if (counterEl) {
+      counterEl.textContent = count.toString().padStart(2, '0');
     }
     
-    ctx.fillStyle = '#ffffff';
-    ctx.fillText('LEGO', 0, 0);
-    ctx.restore();
-    
-    return new THREE.CanvasTexture(canvas);
+    if (progress < 1) {
+      requestAnimationFrame(updateCounter);
+    } else {
+      // Counter completed at 100%
+      setTimeout(finishLoading, 200);
+    }
   }
   
-  const legoLogoTex = createLegoLogoTexture();
-  const scale = 0.45;
-  const redColor = 0xe3000b; // Classic LEGO Red
+  requestAnimationFrame(updateCounter);
   
-  // Voxel builder that packs Lego bricks inside the shoe geometry
-  function generateCrocBricks() {
-    const list = [];
-    
-    // 1. Sole / Base plates (y = 0 to 2)
-    for (let y = 0; y <= 2; y++) {
-      for (let x = -3; x <= 3; x++) {
-        for (let z = -7; z <= 7; z++) {
-          if (z === 7 && Math.abs(x) > 1) continue;
-          if (z === -7 && Math.abs(x) > 1) continue;
-          if (z === 6 && Math.abs(x) > 2) continue;
-          if (z === -6 && Math.abs(x) > 2) continue;
-          
-          list.push({
-            type: 'brick',
-            x: x * 0.4,
-            y: y * 0.25 - 1.2,
-            z: z * 0.4,
-            sizeX: 0.38,
-            sizeY: 0.23,
-            sizeZ: 0.38,
-            hasStud: y === 2
-          });
-        }
-      }
+  function finishLoading() {
+    // Shutter separation trigger
+    if (loaderEl) {
+      loaderEl.classList.add('hide');
     }
+    document.body.style.overflow = '';
     
-    // 2. Toe-box / Front clog dome (y = 3 to 7, z >= 0)
-    for (let y = 3; y <= 7; y++) {
-      for (let x = -3; x <= 3; x++) {
-        for (let z = 0; z <= 6; z++) {
-          if (z === 6 && Math.abs(x) > 1) continue;
-          if (z === 5 && Math.abs(x) > 2) continue;
-          if (Math.abs(x) > (4 - (y - 3))) continue;
-          
-          // Hollow foot cavity inside
-          if (y >= 3 && y <= 5 && Math.abs(x) < 2 && z < 4) continue;
-          
-          list.push({
-            type: 'brick',
-            x: x * 0.4,
-            y: y * 0.25 - 1.2,
-            z: z * 0.4,
-            sizeX: 0.38,
-            sizeY: 0.23,
-            sizeZ: 0.38,
-            hasStud: false
-          });
-        }
-      }
-    }
-    
-    // 3. Side walls (y = 3 to 5, z < 0)
-    for (let y = 3; y <= 5; y++) {
-      for (let z = -6; z < 0; z++) {
-        list.push({
-          type: 'brick',
-          x: -3 * 0.4,
-          y: y * 0.25 - 1.2,
-          z: z * 0.4,
-          sizeX: 0.38,
-          sizeY: 0.23,
-          sizeZ: 0.38,
-          hasStud: y === 5
-        });
-        list.push({
-          type: 'brick',
-          x: 3 * 0.4,
-          y: y * 0.25 - 1.2,
-          z: z * 0.4,
-          sizeX: 0.38,
-          sizeY: 0.23,
-          sizeZ: 0.38,
-          hasStud: y === 5
-        });
-      }
-    }
-    
-    // 4. Heel back wall (y = 3 to 4, z = -7)
-    for (let y = 3; y <= 4; y++) {
-      for (let x = -2; x <= 2; x++) {
-        list.push({
-          type: 'brick',
-          x: x * 0.4,
-          y: y * 0.25 - 1.2,
-          z: -7 * 0.4,
-          sizeX: 0.38,
-          sizeY: 0.23,
-          sizeZ: 0.38,
-          hasStud: y === 4
-        });
-      }
-    }
-    
-    // 5. Strap arch (curved red path of bricks)
-    const strapPoints = [
-      { x: -1.3, y: 1.3, z: -0.5, rx: 0, ry: 0, rz: 0.7 },
-      { x: -1.1, y: 1.9, z: -0.4, rx: 0, ry: 0, rz: 0.4 },
-      { x: -0.6, y: 2.3, z: -0.3, rx: 0, ry: 0, rz: 0.2 },
-      { x: 0.0, y: 2.5, z: -0.2, rx: 0, ry: 0, rz: 0.0 },
-      { x: 0.6, y: 2.3, z: -0.3, rx: 0, ry: 0, rz: -0.2 },
-      { x: 1.1, y: 1.9, z: -0.4, rx: 0, ry: 0, rz: -0.4 },
-      { x: 1.3, y: 1.3, z: -0.5, rx: 0, ry: 0, rz: -0.7 }
+    // Animate stats counting up once shutters open
+    setTimeout(animateStats, 300);
+  }
+  
+  // Stats counter animations
+  function animateStats() {
+    const stats = [
+      { element: document.querySelectorAll('.hero-stat .num')[0], end: 2.0, suffix: 'M+', isFloat: true },
+      { element: document.querySelectorAll('.hero-stat .num')[1], end: 160, suffix: 'K', isFloat: false },
+      { element: document.querySelectorAll('.hero-stat .num')[2], end: 50, suffix: '+', isFloat: false },
+      { element: document.querySelectorAll('.hero-stat .num')[3], end: 5, suffix: ' Ð»ÐµÑ‚', isFloat: false }
     ];
     
-    strapPoints.forEach(p => {
-      list.push({
-        type: 'strap',
-        x: p.x,
-        y: p.y - 0.5,
-        z: p.z,
-        rx: p.rx,
-        ry: p.ry,
-        rz: p.rz,
-        sizeX: 0.42,
-        sizeY: 0.16,
-        sizeZ: 0.45
-      });
-    });
-    
-    // 6. Prominent 4 Giant Studs on Top of the Clog (2x2 grid from photo)
-    const studY = 7 * 0.25 - 1.2 + 0.12;
-    list.push({ type: 'giant-stud', x: -0.6, y: studY, z: 0.8 });
-    list.push({ type: 'giant-stud', x: 0.6, y: studY, z: 0.8 });
-    list.push({ type: 'giant-stud', x: -0.6, y: studY, z: 2.0 });
-    list.push({ type: 'giant-stud', x: 0.6, y: studY, z: 2.0 });
-    
-    // 7. LEGO Logo Emblem hinges
-    list.push({ type: 'emblem', x: -1.35, y: 0.8, z: -0.5, faceDir: -1 });
-    list.push({ type: 'emblem', x: 1.35, y: 0.8, z: -0.5, faceDir: 1 });
-    
-    return list;
-  }
-  
-  const crocBricksLayout = generateCrocBricks();
-  
-  // Create Left and Right solid RED Lego Crocs
-  function create3DAccurateLegoCroc() {
-    const group = new THREE.Group();
-    const bricks = [];
-    
-    const brickMat = new THREE.MeshStandardMaterial({
-      color: redColor,
-      roughness: 0.15,
-      metalness: 0.08
-    });
-    
-    const studGeo = new THREE.CylinderGeometry(0.12 * scale, 0.12 * scale, 0.06 * scale, 8);
-    const giantStudGeo = new THREE.CylinderGeometry(0.38 * scale, 0.38 * scale, 0.22 * scale, 16);
-    
-    crocBricksLayout.forEach((bData) => {
-      const brickGroup = new THREE.Group();
+    stats.forEach(stat => {
+      if (!stat.element) return;
       
-      if (bData.type === 'brick' || bData.type === 'strap') {
-        const boxGeo = new THREE.BoxGeometry(bData.sizeX * scale, bData.sizeY * scale, bData.sizeZ * scale);
-        const boxMesh = new THREE.Mesh(boxGeo, brickMat);
-        boxMesh.castShadow = true;
-        boxMesh.receiveShadow = true;
-        brickGroup.add(boxMesh);
+      let start = 0;
+      const statDuration = 1200; // 1.2s count up
+      const statStartTime = performance.now();
+      
+      function countUp(time) {
+        const elapsed = time - statStartTime;
+        const progress = Math.min(elapsed / statDuration, 1);
+        const ease = 1 - Math.pow(1 - progress, 4); // Quartic ease out
         
-        if (bData.hasStud) {
-          const stud = new THREE.Mesh(studGeo, brickMat);
-          stud.position.y = (bData.sizeY / 2 + 0.03) * scale;
-          stud.castShadow = true;
-          brickGroup.add(stud);
+        const current = ease * stat.end;
+        
+        if (stat.isFloat) {
+          stat.element.textContent = current.toFixed(1) + stat.suffix;
+        } else {
+          stat.element.textContent = Math.floor(current) + stat.suffix;
         }
         
-        if (bData.rx !== undefined) brickGroup.rotation.set(bData.rx, bData.ry, bData.rz);
-        
-      } else if (bData.type === 'giant-stud') {
-        const giantStud = new THREE.Mesh(giantStudGeo, brickMat);
-        giantStud.castShadow = true;
-        giantStud.receiveShadow = true;
-        brickGroup.add(giantStud);
-        
-      } else if (bData.type === 'emblem') {
-        const emblemGeo = new THREE.BoxGeometry(0.38 * scale, 0.38 * scale, 0.08 * scale);
-        const emblemMats = [
-          brickMat,
-          brickMat,
-          brickMat,
-          brickMat,
-          bData.faceDir === -1 ? new THREE.MeshStandardMaterial({ map: legoLogoTex, roughness: 0.15 }) : brickMat,
-          bData.faceDir === 1 ? new THREE.MeshStandardMaterial({ map: legoLogoTex, roughness: 0.15 }) : brickMat
-        ];
-        
-        const emblemMesh = new THREE.Mesh(emblemGeo, emblemMats);
-        emblemMesh.castShadow = true;
-        brickGroup.add(emblemMesh);
-        
-        brickGroup.rotation.z = Math.PI / 4;
-        if (bData.faceDir === 1) brickGroup.rotation.y = Math.PI;
+        if (progress < 1) {
+          requestAnimationFrame(countUp);
+        }
+      }
+      requestAnimationFrame(countUp);
+    });
+  }
+  
+  // Magnetic Parallax Hover Effects (Interactive 3D Circle Emblem & Light Orb)
+  const hero = document.querySelector('.hero');
+  const orb = document.querySelector('.hero-orb');
+  const emblemContainer = document.querySelector('.hero-emblem-container');
+  const emblem = document.querySelector('.hero-emblem');
+  const emblemInner = document.querySelector('.hero-emblem-inner');
+  
+  if (hero) {
+    hero.addEventListener('mousemove', (e) => {
+      const rect = hero.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      // Update light orb position
+      if (orb) {
+        orb.style.left = ${x}px;
+        orb.style.top = ${y}px;
       }
       
-      const tx = bData.x * scale;
-      const ty = bData.y * scale;
-      const tz = bData.z * scale;
-      
-      brickGroup.position.set(tx, ty, tz);
-      
-      brickGroup.userData = {
-        tx: tx,
-        ty: ty,
-        tz: tz,
-        velocity: new THREE.Vector3(),
-        rotVelocity: new THREE.Vector3()
-      };
-      
-      group.add(brickGroup);
-      bricks.push(brickGroup);
+      // Update interactive 3D parallax on emblem container
+      if (emblemContainer && emblem && emblemInner) {
+        const embRect = emblemContainer.getBoundingClientRect();
+        const embCenterX = embRect.left + embRect.width / 2;
+        const embCenterY = embRect.top + embRect.height / 2;
+        
+        const deltaX = e.clientX - embCenterX;
+        const deltaY = e.clientY - embCenterY;
+        
+        // Tilt rotations
+        const tiltX = (deltaY / window.innerHeight) * 35; // max 35 deg
+        const tiltY = -(deltaX / window.innerWidth) * 35;
+        
+        emblem.style.transform = otate(deg) rotateX(deg) rotateY(deg) translateZ(20px);
+        emblemInner.style.transform = scale(1.08) translate3d(px, px, 30px);
+      }
     });
     
-    return { group, bricks };
+    // Reset hover transforms on leave
+    hero.addEventListener('mouseleave', () => {
+      if (emblem) emblem.style.transform = '';
+      if (emblemInner) emblemInner.style.transform = '';
+    });
   }
   
-  const left = create3DAccurateLegoCroc();
-  const right = create3DAccurateLegoCroc();
-  
-  scene.add(left.group);
-  scene.add(right.group);
-  
-  // Animation state
-  let clock = new THREE.Clock();
-  let introDuration = 3.5; // Premium presentation spin intro
-  let exploded = false;
-  let finished = false;
-  
-  let pageLoaded = false;
-  window.addEventListener('load', () => { pageLoaded = true; });
-  
-  // Main Animation Loop
-  function animate() {
-    if (finished) return;
-    requestAnimationFrame(animate);
-    
-    const time = clock.getElapsedTime();
-    const dt = clock.getDelta() || 0.016;
-    
-    // 1. PREMIUM MOTION PRESENTATION INTRO (Elegant cinematic orbit & spin)
-    if (time < introDuration) {
-      camera.position.x = 10 * Math.sin(time * 0.9);
-      camera.position.y = 4 + Math.sin(time * 1.5) * 1.8;
-      camera.position.z = 15 * Math.cos(time * 0.9);
-      camera.lookAt(0, 0.4, 0);
-      
-      left.group.position.set(-2.0, Math.sin(time * 2.0) * 0.3, 0);
-      left.group.rotation.y = time * 1.2;
-      left.group.rotation.x = Math.sin(time * 1.5) * 0.15;
-      left.group.rotation.z = Math.cos(time * 1.5) * 0.08;
-      
-      right.group.position.set(2.0, Math.sin(time * 2.0 + Math.PI) * 0.3, 0);
-      right.group.rotation.y = -time * 1.2 + Math.PI / 4;
-      right.group.rotation.x = Math.sin(time * 1.5 + 0.5) * 0.15;
-      right.group.rotation.z = Math.cos(time * 1.5 + 0.5) * 0.08;
-      
-      dirLight.position.x = 15 * Math.sin(time * 2.0);
-      dirLight.position.z = 15 * Math.cos(time * 2.0);
-      
-      pointLight.intensity = 2.0 + Math.sin(time * 4.0) * 0.8;
-      
-    // 2. EXPLOSION & SLOW FADE TO HERO SECTION
-    } else {
-      if (!exploded) {
-        exploded = true;
-        
-        const explodeShoe = (shoe) => {
-          shoe.bricks.forEach((b) => {
-            const ud = b.userData;
-            
-            const globalPos = new THREE.Vector3(ud.tx, ud.ty, ud.tz).applyMatrix4(shoe.group.matrixWorld);
-            b.position.copy(globalPos);
-            
-            const radDir = new THREE.Vector3(ud.tx, ud.ty, ud.tz).normalize();
-            ud.velocity.copy(radDir).multiplyScalar(15 + Math.random() * 25);
-            
-            ud.velocity.y += 18 + Math.random() * 22;
-            ud.velocity.x += (Math.random() - 0.5) * 15;
-            ud.velocity.z += (Math.random() - 0.5) * 15;
-            
-            ud.rotVelocity.set(
-              (Math.random() - 0.5) * 15,
-              (Math.random() - 0.5) * 15,
-              (Math.random() - 0.5) * 15
-            );
-          });
-          scene.attach(shoe.group);
-        };
-        
-        explodeShoe(left);
-        explodeShoe(right);
-      }
-      
-      const explosionTime = time - introDuration;
-      
-      const updatePhysics = (shoe) => {
-        shoe.bricks.forEach((b) => {
-          const ud = b.userData;
-          ud.velocity.y -= 35 * dt;
-          
-          b.position.addScaledVector(ud.velocity, dt);
-          
-          b.rotation.x += ud.rotVelocity.x * dt;
-          b.rotation.y += ud.rotVelocity.y * dt;
-          b.rotation.z += ud.rotVelocity.z * dt;
-          
-          const s = Math.max(0.01, 1.0 - explosionTime * 0.8);
-          b.scale.set(s, s, s);
-        });
-      };
-      
-      updatePhysics(left);
-      updatePhysics(right);
-      
-      const fadeProgress = Math.min(1, explosionTime * 0.7);
-      loaderEl.style.opacity = 1 - fadeProgress;
-      gridHelper.material.opacity = 1 - fadeProgress;
-      
-      if (fadeProgress >= 1) {
-        finished = true;
-        loaderEl.style.display = 'none';
-        renderer.dispose();
-      }
-    }
-    
-    renderer.render(scene, camera);
+  function timeRotation() {
+    const now = performance.now() / 1000;
+    return (now * 12) % 360; // constant slow spin
   }
-  
-  requestAnimationFrame(animate);
 })();
 
 // Clone ticker for seamless loop

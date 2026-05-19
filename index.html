@@ -133,6 +133,48 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overf
   transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
+/* TICKER MARQUEE STYLING */
+.ticker {
+  background: #000000;
+  border-bottom: 2px solid var(--red);
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 14px 0;
+  position: relative;
+  z-index: 5;
+  display: flex;
+  width: 100%;
+}
+.ticker-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 40px;
+  animation: ticker-slide 25s linear infinite;
+}
+.ticker span {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 15px;
+}
+.ticker-logo {
+  width: 28px !important;
+  height: 28px !important;
+  display: inline-block;
+  vertical-align: middle;
+}
+.ticker-logo path {
+  fill: var(--red) !important;
+}
+@keyframes ticker-slide {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 /* NEW HIGH-END HERO SECTION */
 .hero {
   min-height: 100vh;

@@ -376,7 +376,7 @@ update();
   // Camera
   const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
   camera.position.set(0, 5, 25);
-  camera.lookAt(0, 0, 0);
+  camera.lookAt(0, 0.4, 0);
   
   // Renderer
   const renderer = new THREE.WebGLRenderer({
@@ -397,10 +397,10 @@ update();
   });
   
   // Lights
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.25);
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.35);
   scene.add(ambientLight);
   
-  const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
   dirLight.position.set(10, 20, 10);
   dirLight.castShadow = true;
   dirLight.shadow.mapSize.width = 1024;
@@ -418,114 +418,268 @@ update();
   gridHelper.position.y = -3;
   scene.add(gridHelper);
   
-  // Voxel data generator for the Lego Croc Slipper
-  function generateCrocVoxels() {
-    const list = [];
+  // LEGO Logo Texture Generator
+  function createLegoLogoTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 128;
+    canvas.height = 128;
+    const ctx = canvas.getContext('2d');
     
-    // Sole (bottom layer)
-    for (let x = -3; x <= 3; x++) {
-      for (let z = -6; z <= 6; z++) {
-        if (z === 6 && Math.abs(x) > 1) continue;
-        if (z === -6 && Math.abs(x) > 1) continue;
-        if (z === 5 && Math.abs(x) > 2) continue;
-        if (z === -5 && Math.abs(x) > 2) continue;
-        list.push({ x, y: 0, z });
-      }
-    }
+    // Red background
+    ctx.fillStyle = '#e3000b';
+    ctx.fillRect(0, 0, 128, 128);
     
-    // Side walls
-    for (let z = -5; z <= 5; z++) {
-      let maxX = 3;
-      if (z === 5) maxX = 2;
-      list.push({ x: -maxX, y: 1, z });
-      list.push({ x: maxX, y: 1, z });
-    }
+    // Black border
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(3, 3, 122, 122);
     
-    // Front clog dome (toe box)
-    for (let y = 1; y <= 3; y++) {
-      for (let z = 1; z <= 6; z++) {
-        for (let x = -3; x <= 3; x++) {
-          if (z === 6 && Math.abs(x) > 1) continue;
-          if (z === 5 && Math.abs(x) > 2) continue;
-          if (Math.abs(x) > (4 - y)) continue;
-          if (z === 6 && y > 1) continue;
-          // Hollow inside
-          if (y === 1 && Math.abs(x) < 2 && z < 4) continue;
-          if (y === 2 && Math.abs(x) < 1 && z < 3) continue;
-          list.push({ x, y, z });
+    // Yellow oval
+    ctx.save();
+    ctx.translate(64, 64);
+    ctx.rotate(-0.08);
+    ctx.scale(1.2, 0.75);
+    ctx.beginPath();
+    ctx.arc(0, 0, 42, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffd700';
+    ctx.fill();
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 6;
+    ctx.stroke();
+    ctx.restore();
+    
+    // "LEGO" text
+    ctx.save();
+    ctx.font = 'italic bold 32px "Arial Black", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.translate(64, 66);
+    ctx.rotate(-0.06);
+    
+    ctx.fillStyle = '#000000';
+    for (let dx = -3; dx <= 3; dx++) {
+      for (let dy = -3; dy <= 3; dy++) {
+        if (Math.abs(dx) + Math.abs(dy) > 0) {
+          ctx.fillText('LEGO', dx, dy);
         }
       }
     }
     
-    // Heel backing
-    for (let y = 1; y <= 2; y++) {
-      for (let x = -2; x <= 2; x++) {
-        list.push({ x, y, z: -6 });
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('LEGO', 0, 0);
+    ctx.restore();
+    
+    return new THREE.CanvasTexture(canvas);
+  }
+  
+  const legoLogoTex = createLegoLogoTexture();
+  const scale = 0.45;
+  const redColor = 0xe3000b; // Classic LEGO Red
+  
+  // Voxel builder that packs Lego bricks inside the shoe geometry
+  function generateCrocBricks() {
+    const list = [];
+    
+    // 1. Sole / Base plates (y = 0 to 2)
+    for (let y = 0; y <= 2; y++) {
+      for (let x = -3; x <= 3; x++) {
+        for (let z = -7; z <= 7; z++) {
+          if (z === 7 && Math.abs(x) > 1) continue;
+          if (z === -7 && Math.abs(x) > 1) continue;
+          if (z === 6 && Math.abs(x) > 2) continue;
+          if (z === -6 && Math.abs(x) > 2) continue;
+          
+          list.push({
+            type: 'brick',
+            x: x * 0.4,
+            y: y * 0.25 - 1.2,
+            z: z * 0.4,
+            sizeX: 0.38,
+            sizeY: 0.23,
+            sizeZ: 0.38,
+            hasStud: y === 2
+          });
+        }
       }
     }
     
-    // Strap arch
-    for (let y = 1; y <= 4; y++) {
-      list.push({ x: -3, y, z: -1 });
-      list.push({ x: 3, y, z: -1 });
+    // 2. Toe-box / Front clog dome (y = 3 to 7, z >= 0)
+    for (let y = 3; y <= 7; y++) {
+      for (let x = -3; x <= 3; x++) {
+        for (let z = 0; z <= 6; z++) {
+          if (z === 6 && Math.abs(x) > 1) continue;
+          if (z === 5 && Math.abs(x) > 2) continue;
+          if (Math.abs(x) > (4 - (y - 3))) continue;
+          
+          // Hollow foot cavity inside
+          if (y >= 3 && y <= 5 && Math.abs(x) < 2 && z < 4) continue;
+          
+          list.push({
+            type: 'brick',
+            x: x * 0.4,
+            y: y * 0.25 - 1.2,
+            z: z * 0.4,
+            sizeX: 0.38,
+            sizeY: 0.23,
+            sizeZ: 0.38,
+            hasStud: false
+          });
+        }
+      }
     }
-    for (let x = -2; x <= 2; x++) {
-      list.push({ x, y: 4, z: -1 });
+    
+    // 3. Side walls (y = 3 to 5, z < 0)
+    for (let y = 3; y <= 5; y++) {
+      for (let z = -6; z < 0; z++) {
+        list.push({
+          type: 'brick',
+          x: -3 * 0.4,
+          y: y * 0.25 - 1.2,
+          z: z * 0.4,
+          sizeX: 0.38,
+          sizeY: 0.23,
+          sizeZ: 0.38,
+          hasStud: y === 5
+        });
+        list.push({
+          type: 'brick',
+          x: 3 * 0.4,
+          y: y * 0.25 - 1.2,
+          z: z * 0.4,
+          sizeX: 0.38,
+          sizeY: 0.23,
+          sizeZ: 0.38,
+          hasStud: y === 5
+        });
+      }
     }
+    
+    // 4. Heel back wall (y = 3 to 4, z = -7)
+    for (let y = 3; y <= 4; y++) {
+      for (let x = -2; x <= 2; x++) {
+        list.push({
+          type: 'brick',
+          x: x * 0.4,
+          y: y * 0.25 - 1.2,
+          z: -7 * 0.4,
+          sizeX: 0.38,
+          sizeY: 0.23,
+          sizeZ: 0.38,
+          hasStud: y === 4
+        });
+      }
+    }
+    
+    // 5. Strap arch (curved red path of bricks)
+    const strapPoints = [
+      { x: -1.3, y: 1.3, z: -0.5, rx: 0, ry: 0, rz: 0.7 },
+      { x: -1.1, y: 1.9, z: -0.4, rx: 0, ry: 0, rz: 0.4 },
+      { x: -0.6, y: 2.3, z: -0.3, rx: 0, ry: 0, rz: 0.2 },
+      { x: 0.0, y: 2.5, z: -0.2, rx: 0, ry: 0, rz: 0.0 },
+      { x: 0.6, y: 2.3, z: -0.3, rx: 0, ry: 0, rz: -0.2 },
+      { x: 1.1, y: 1.9, z: -0.4, rx: 0, ry: 0, rz: -0.4 },
+      { x: 1.3, y: 1.3, z: -0.5, rx: 0, ry: 0, rz: -0.7 }
+    ];
+    
+    strapPoints.forEach(p => {
+      list.push({
+        type: 'strap',
+        x: p.x,
+        y: p.y - 0.5,
+        z: p.z,
+        rx: p.rx,
+        ry: p.ry,
+        rz: p.rz,
+        sizeX: 0.42,
+        sizeY: 0.16,
+        sizeZ: 0.45
+      });
+    });
+    
+    // 6. Prominent 4 Giant Studs on Top of the Clog (2x2 grid from photo)
+    const studY = 7 * 0.25 - 1.2 + 0.12;
+    list.push({ type: 'giant-stud', x: -0.6, y: studY, z: 0.8 });
+    list.push({ type: 'giant-stud', x: 0.6, y: studY, z: 0.8 });
+    list.push({ type: 'giant-stud', x: -0.6, y: studY, z: 2.0 });
+    list.push({ type: 'giant-stud', x: 0.6, y: studY, z: 2.0 });
+    
+    // 7. LEGO Logo Emblem hinges
+    list.push({ type: 'emblem', x: -1.35, y: 0.8, z: -0.5, faceDir: -1 });
+    list.push({ type: 'emblem', x: 1.35, y: 0.8, z: -0.5, faceDir: 1 });
     
     return list;
   }
   
-  const crocLayout = generateCrocVoxels();
-  const scale = 0.4;
+  const crocBricksLayout = generateCrocBricks();
   
-  // Function to create a 3D Lego Croc group
-  function create3DLegoCroc(shoeColor) {
+  // Create Left and Right solid RED Lego Crocs
+  function create3DAccurateLegoCroc() {
     const group = new THREE.Group();
     const bricks = [];
     
-    const brickGeo = new THREE.BoxGeometry(0.95 * scale, 0.58 * scale, 0.95 * scale);
-    const studGeo = new THREE.CylinderGeometry(0.28 * scale, 0.28 * scale, 0.16 * scale, 8);
-    
     const brickMat = new THREE.MeshStandardMaterial({
-      color: shoeColor,
+      color: redColor,
       roughness: 0.15,
-      metalness: 0.1
+      metalness: 0.08
     });
     
-    crocLayout.forEach((vox) => {
+    const studGeo = new THREE.CylinderGeometry(0.12 * scale, 0.12 * scale, 0.06 * scale, 8);
+    const giantStudGeo = new THREE.CylinderGeometry(0.38 * scale, 0.38 * scale, 0.22 * scale, 16);
+    
+    crocBricksLayout.forEach((bData) => {
       const brickGroup = new THREE.Group();
       
-      const boxMesh = new THREE.Mesh(brickGeo, brickMat);
-      boxMesh.castShadow = true;
-      boxMesh.receiveShadow = true;
-      brickGroup.add(boxMesh);
+      if (bData.type === 'brick' || bData.type === 'strap') {
+        const boxGeo = new THREE.BoxGeometry(bData.sizeX * scale, bData.sizeY * scale, bData.sizeZ * scale);
+        const boxMesh = new THREE.Mesh(boxGeo, brickMat);
+        boxMesh.castShadow = true;
+        boxMesh.receiveShadow = true;
+        brickGroup.add(boxMesh);
+        
+        if (bData.hasStud) {
+          const stud = new THREE.Mesh(studGeo, brickMat);
+          stud.position.y = (bData.sizeY / 2 + 0.03) * scale;
+          stud.castShadow = true;
+          brickGroup.add(stud);
+        }
+        
+        if (bData.rx !== undefined) brickGroup.rotation.set(bData.rx, bData.ry, bData.rz);
+        
+      } else if (bData.type === 'giant-stud') {
+        const giantStud = new THREE.Mesh(giantStudGeo, brickMat);
+        giantStud.castShadow = true;
+        giantStud.receiveShadow = true;
+        brickGroup.add(giantStud);
+        
+      } else if (bData.type === 'emblem') {
+        const emblemGeo = new THREE.BoxGeometry(0.38 * scale, 0.38 * scale, 0.08 * scale);
+        const emblemMats = [
+          brickMat,
+          brickMat,
+          brickMat,
+          brickMat,
+          bData.faceDir === -1 ? new THREE.MeshStandardMaterial({ map: legoLogoTex, roughness: 0.15 }) : brickMat,
+          bData.faceDir === 1 ? new THREE.MeshStandardMaterial({ map: legoLogoTex, roughness: 0.15 }) : brickMat
+        ];
+        
+        const emblemMesh = new THREE.Mesh(emblemGeo, emblemMats);
+        emblemMesh.castShadow = true;
+        brickGroup.add(emblemMesh);
+        
+        brickGroup.rotation.z = Math.PI / 4;
+        if (bData.faceDir === 1) brickGroup.rotation.y = Math.PI;
+      }
       
-      // Stud on top representing the classic Lego knob
-      const studMesh = new THREE.Mesh(studGeo, brickMat);
-      studMesh.position.y = 0.37 * scale;
-      studMesh.castShadow = true;
-      brickGroup.add(studMesh);
+      const tx = bData.x * scale;
+      const ty = bData.y * scale;
+      const tz = bData.z * scale;
       
-      // Target position
-      const tx = vox.x * scale;
-      const ty = (vox.y * 0.6) * scale - 1.5;
-      const tz = vox.z * scale;
-      
-      // Scatter bricks initially for the assembly effect
-      const startX = tx + (Math.random() - 0.5) * 40;
-      const startY = ty + Math.random() * 30 + 15;
-      const startZ = tz + (Math.random() - 0.5) * 40;
-      
-      brickGroup.position.set(startX, startY, startZ);
+      brickGroup.position.set(tx, ty, tz);
       
       brickGroup.userData = {
         tx: tx,
         ty: ty,
         tz: tz,
-        startX: startX,
-        startY: startY,
-        startZ: startZ,
         velocity: new THREE.Vector3(),
         rotVelocity: new THREE.Vector3()
       };
@@ -537,27 +691,20 @@ update();
     return { group, bricks };
   }
   
-  // Create Left (Red) and Right (Dark Grey/Black Lego) Crocs
-  const left = create3DLegoCroc(0xe3272b); // Hookah Place Red
-  const right = create3DLegoCroc(0x222222); // Brutalist Dark Grey
+  const left = create3DAccurateLegoCroc();
+  const right = create3DAccurateLegoCroc();
   
   scene.add(left.group);
   scene.add(right.group);
   
-  // Animation variables
+  // Animation state
   let clock = new THREE.Clock();
-  let assembleDuration = 1.5; // 1.5 seconds assembly
-  let walkStartTime = assembleDuration;
-  let clashStartTime = walkStartTime + 1.8; // Walk for 1.8 seconds
-  let explosionStartTime = clashStartTime + 0.6; // Jump & clash for 0.6 seconds
+  let introDuration = 3.5; // Premium presentation spin intro
   let exploded = false;
   let finished = false;
   
-  // Trigger variables
   let pageLoaded = false;
-  window.addEventListener('load', () => {
-    pageLoaded = true;
-  });
+  window.addEventListener('load', () => { pageLoaded = true; });
   
   // Main Animation Loop
   function animate() {
@@ -567,135 +714,85 @@ update();
     const time = clock.getElapsedTime();
     const dt = clock.getDelta() || 0.016;
     
-    // 1. ASSEMBLY PHASE (Flying bricks gathering together)
-    if (time < assembleDuration) {
-      const progress = time / assembleDuration;
-      const t = 1 - Math.pow(1 - progress, 3); // Cubic ease out
+    // 1. PREMIUM MOTION PRESENTATION INTRO (Elegant cinematic orbit & spin)
+    if (time < introDuration) {
+      camera.position.x = 10 * Math.sin(time * 0.9);
+      camera.position.y = 4 + Math.sin(time * 1.5) * 1.8;
+      camera.position.z = 15 * Math.cos(time * 0.9);
+      camera.lookAt(0, 0.4, 0);
       
-      const animateShoe = (shoe) => {
-        shoe.bricks.forEach((b) => {
-          const ud = b.userData;
-          b.position.x = THREE.MathUtils.lerp(ud.startX, ud.tx, t);
-          b.position.y = THREE.MathUtils.lerp(ud.startY, ud.ty, t);
-          b.position.z = THREE.MathUtils.lerp(ud.startZ, ud.tz, t);
-        });
-      };
+      left.group.position.set(-2.0, Math.sin(time * 2.0) * 0.3, 0);
+      left.group.rotation.y = time * 1.2;
+      left.group.rotation.x = Math.sin(time * 1.5) * 0.15;
+      left.group.rotation.z = Math.cos(time * 1.5) * 0.08;
       
-      animateShoe(left);
-      animateShoe(right);
+      right.group.position.set(2.0, Math.sin(time * 2.0 + Math.PI) * 0.3, 0);
+      right.group.rotation.y = -time * 1.2 + Math.PI / 4;
+      right.group.rotation.x = Math.sin(time * 1.5 + 0.5) * 0.15;
+      right.group.rotation.z = Math.cos(time * 1.5 + 0.5) * 0.08;
       
-      // Place them on the sides
-      left.group.position.x = -4;
-      right.group.position.x = 4;
+      dirLight.position.x = 15 * Math.sin(time * 2.0);
+      dirLight.position.z = 15 * Math.cos(time * 2.0);
       
-    // 2. WALKING/HOPPING PHASE
-    } else if (time < clashStartTime) {
-      // Smoothly snap positions to target to make sure assembly is complete
-      const animateShoe = (shoe) => {
-        shoe.bricks.forEach((b) => {
-          const ud = b.userData;
-          b.position.set(ud.tx, ud.ty, ud.tz);
-        });
-      };
-      animateShoe(left);
-      animateShoe(right);
+      pointLight.intensity = 2.0 + Math.sin(time * 4.0) * 0.8;
       
-      const walkTime = time - walkStartTime;
-      const speed = 7.5;
-      
-      // Left shoe hopping forward
-      left.group.position.x = -3.5;
-      left.group.position.y = Math.abs(Math.sin(walkTime * speed)) * 1.6 - 1;
-      left.group.position.z = Math.cos(walkTime * speed) * 1.5;
-      left.group.rotation.x = Math.sin(walkTime * speed) * 0.25;
-      left.group.rotation.y = 0.15;
-      
-      // Right shoe hopping forward (offset phase)
-      right.group.position.x = 3.5;
-      right.group.position.y = Math.abs(Math.sin(walkTime * speed + Math.PI)) * 1.6 - 1;
-      right.group.position.z = Math.cos(walkTime * speed + Math.PI) * 1.5;
-      right.group.rotation.x = Math.sin(walkTime * speed + Math.PI) * 0.25;
-      right.group.rotation.y = -0.15;
-      
-    // 3. JUMP AND CLASH PREPARATION
-    } else if (time < explosionStartTime) {
-      const clashProgress = (time - clashStartTime) / (explosionStartTime - clashStartTime);
-      const t = clashProgress;
-      
-      // Jump and meet in the center (x=0, y=2.5, z=0)
-      left.group.position.x = THREE.MathUtils.lerp(-3.5, -0.6, t);
-      left.group.position.y = THREE.MathUtils.lerp(-1, 3, t) + Math.sin(t * Math.PI) * 3;
-      left.group.position.z = THREE.MathUtils.lerp(0, 0, t);
-      left.group.rotation.set(t * 0.2, 0.15 - t * 0.5, t * Math.PI * 0.2);
-      
-      right.group.position.x = THREE.MathUtils.lerp(3.5, 0.6, t);
-      right.group.position.y = THREE.MathUtils.lerp(-1, 3, t) + Math.sin(t * Math.PI) * 3;
-      right.group.position.z = THREE.MathUtils.lerp(0, 0, t);
-      right.group.rotation.set(t * 0.2, -0.15 + t * 0.5, -t * Math.PI * 0.2);
-      
-    // 4. EXPLOSION & DISASSEMBLY PHASE
+    // 2. EXPLOSION & SLOW FADE TO HERO SECTION
     } else {
       if (!exploded) {
         exploded = true;
-        // Assign random explosive physical velocities to every single brick
-        const explodeShoe = (shoe, dirFactor) => {
+        
+        const explodeShoe = (shoe) => {
           shoe.bricks.forEach((b) => {
             const ud = b.userData;
             
-            // Get brick global target position in scene
             const globalPos = new THREE.Vector3(ud.tx, ud.ty, ud.tz).applyMatrix4(shoe.group.matrixWorld);
             b.position.copy(globalPos);
             
-            // Set explosive velocity vectors radiating outwards
-            ud.velocity.set(
-              (Math.random() - 0.5) * 32 + (dirFactor * 10),
-              (Math.random() * 26) + 12,
-              (Math.random() - 0.5) * 32
-            );
+            const radDir = new THREE.Vector3(ud.tx, ud.ty, ud.tz).normalize();
+            ud.velocity.copy(radDir).multiplyScalar(15 + Math.random() * 25);
             
-            // Tumble rotation velocities
+            ud.velocity.y += 18 + Math.random() * 22;
+            ud.velocity.x += (Math.random() - 0.5) * 15;
+            ud.velocity.z += (Math.random() - 0.5) * 15;
+            
             ud.rotVelocity.set(
-              (Math.random() - 0.5) * 12,
-              (Math.random() - 0.5) * 12,
-              (Math.random() - 0.5) * 12
+              (Math.random() - 0.5) * 15,
+              (Math.random() - 0.5) * 15,
+              (Math.random() - 0.5) * 15
             );
           });
-          // Remove groups constraints so elements move in global space
           scene.attach(shoe.group);
         };
         
-        explodeShoe(left, -1);
-        explodeShoe(right, 1);
+        explodeShoe(left);
+        explodeShoe(right);
       }
       
-      // Update exploding physics for all bricks
-      const explosionTime = time - explosionStartTime;
+      const explosionTime = time - introDuration;
       
       const updatePhysics = (shoe) => {
         shoe.bricks.forEach((b) => {
           const ud = b.userData;
-          // Apply gravity
-          ud.velocity.y -= 38 * dt;
+          ud.velocity.y -= 35 * dt;
           
-          // Apply linear friction and update positions
           b.position.addScaledVector(ud.velocity, dt);
           
-          // Update rotations
           b.rotation.x += ud.rotVelocity.x * dt;
           b.rotation.y += ud.rotVelocity.y * dt;
           b.rotation.z += ud.rotVelocity.z * dt;
+          
+          const s = Math.max(0.01, 1.0 - explosionTime * 0.8);
+          b.scale.set(s, s, s);
         });
       };
       
       updatePhysics(left);
       updatePhysics(right);
       
-      // Fade out loader screen and grid helper
-      const fadeProgress = Math.min(1, explosionTime * 1.5);
+      const fadeProgress = Math.min(1, explosionTime * 0.7);
       loaderEl.style.opacity = 1 - fadeProgress;
       gridHelper.material.opacity = 1 - fadeProgress;
       
-      // Complete and hide
       if (fadeProgress >= 1) {
         finished = true;
         loaderEl.style.display = 'none';
@@ -703,14 +800,9 @@ update();
       }
     }
     
-    // Rotate lights slightly for realistic brick shines
-    dirLight.position.x = 10 + Math.sin(time) * 4;
-    dirLight.position.z = 10 + Math.cos(time) * 4;
-    
     renderer.render(scene, camera);
   }
   
-  // Start Three.js loop
   requestAnimationFrame(animate);
 })();
 

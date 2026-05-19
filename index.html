@@ -6,6 +6,7 @@
 <title>Hookah Place West</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 :root {
   --red: #e3272b;
@@ -23,23 +24,10 @@ html{scroll-behavior:smooth;}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow-x:hidden;}
 
 /* LOADER */
-#loader{position:fixed;inset:0;background:#0a0a0a;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.6s ease;}
+#loader{position:fixed;inset:0;background:#0a0a0a;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.6s ease;overflow:hidden;}
 #loader.hide{opacity:0;pointer-events:none;}
-.croc-wrap{display:flex;gap:60px;align-items:flex-end;margin-bottom:40px;}
-.croc{width:120px;height:80px;position:relative;animation:walk 0.5s ease-in-out infinite alternate;}
-.croc:nth-child(2){animation-delay:0.25s;}
-@keyframes walk{0%{transform:translateY(0) rotate(-5deg);}100%{transform:translateY(-15px) rotate(5deg);}}
-.croc-body{width:120px;height:55px;background:var(--red);border-radius:60px 60px 30px 30px;position:relative;}
-.croc-body::before{content:'';position:absolute;top:8px;left:15px;right:15px;height:20px;background:rgba(0,0,0,0.25);border-radius:50%;}
-.croc-strap{width:90px;height:14px;background:#c41f23;border-radius:7px;position:absolute;bottom:18px;left:15px;}
-.stud{width:14px;height:14px;background:#e05050;border-radius:50%;position:absolute;top:-6px;border:2px solid #a01010;}
-.stud:nth-child(1){left:5px;}
-.stud:nth-child(2){left:25px;}
-.stud:nth-child(3){left:45px;}
-.stud:nth-child(4){left:65px;}
-.croc-sole{width:130px;height:22px;background:#222;border-radius:10px;position:absolute;bottom:-8px;left:-5px;}
-.croc-heel{width:40px;height:30px;background:#333;border-radius:8px;position:absolute;bottom:-3px;right:-5px;}
-.loader-text{color:var(--red);font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:4px;animation:pulse 1s ease-in-out infinite;}
+#loader-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;}
+.loader-text{color:var(--red);font-family:'Bebas Neue',sans-serif;font-size:2.5rem;letter-spacing:4px;z-index:2;position:absolute;bottom:15%;animation:pulse 1s ease-in-out infinite;text-shadow: 0 0 20px rgba(227, 39, 43, 0.4);}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
 
 /* TICKER */
@@ -142,44 +130,25 @@ footer p{font-size:0.85rem;color:var(--muted);}
 </style>
 
 
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23e3272b' d='M38.09,1.44 A12,12 0 0,1 61.91,1.44 A50,50 0 0,1 98.56,38.09 A12,12 0 0,1 98.56,61.91 A50,50 0 0,1 61.91,98.56 A12,12 0 0,1 38.09,98.56 A50,50 0 0,1 1.44,61.91 A12,12 0 0,1 1.44,38.09 A50,50 0 0,1 38.09,1.44 Z'/%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23e3272b' d='M38.09,1.44 A12,12 0 0,0 61.91,1.44 A50,50 0 0,1 98.56,38.09 A12,12 0 0,0 98.56,61.91 A50,50 0 0,1 61.91,98.56 A12,12 0 0,0 38.09,98.56 A50,50 0 0,1 1.44,61.91 A12,12 0 0,0 1.44,38.09 A50,50 0 0,1 38.09,1.44 Z'/%3E%3C/svg%3E">
 </head>
 <body>
 
 <!-- LOADER -->
 <div id="loader">
-  <div class="croc-wrap">
-    <div class="croc">
-      <div class="croc-body">
-        <div class="croc-strap">
-          <div class="stud"></div><div class="stud"></div><div class="stud"></div><div class="stud"></div>
-        </div>
-      </div>
-      <div class="croc-sole"></div>
-      <div class="croc-heel"></div>
-    </div>
-    <div class="croc">
-      <div class="croc-body">
-        <div class="croc-strap">
-          <div class="stud"></div><div class="stud"></div><div class="stud"></div><div class="stud"></div>
-        </div>
-      </div>
-      <div class="croc-sole"></div>
-      <div class="croc-heel"></div>
-    </div>
-  </div>
+  <canvas id="loader-canvas"></canvas>
   <div class="loader-text">HOOKAH PLACE WEST</div>
 </div>
 
 <!-- TICKER -->
 <div class="ticker">
     <div class="ticker-inner" id="ticker-inner">
-    <span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="ticker-logo"><path fill="#000000" d="M38.09,1.44 A12,12 0 0,1 61.91,1.44 A50,50 0 0,1 98.56,38.09 A12,12 0 0,1 98.56,61.91 A50,50 0 0,1 61.91,98.56 A12,12 0 0,1 38.09,98.56 A50,50 0 0,1 1.44,61.91 A12,12 0 0,1 1.44,38.09 A50,50 0 0,1 38.09,1.44 Z"/></svg> HOOKAH PLACE WEST</span>
-    <span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="ticker-logo"><path fill="#000000" d="M38.09,1.44 A12,12 0 0,1 61.91,1.44 A50,50 0 0,1 98.56,38.09 A12,12 0 0,1 98.56,61.91 A50,50 0 0,1 61.91,98.56 A12,12 0 0,1 38.09,98.56 A50,50 0 0,1 1.44,61.91 A12,12 0 0,1 1.44,38.09 A50,50 0 0,1 38.09,1.44 Z"/></svg> HOOKAH PLACE WEST</span>
-    <span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="ticker-logo"><path fill="#000000" d="M38.09,1.44 A12,12 0 0,1 61.91,1.44 A50,50 0 0,1 98.56,38.09 A12,12 0 0,1 98.56,61.91 A50,50 0 0,1 61.91,98.56 A12,12 0 0,1 38.09,98.56 A50,50 0 0,1 1.44,61.91 A12,12 0 0,1 1.44,38.09 A50,50 0 0,1 38.09,1.44 Z"/></svg> HOOKAH PLACE WEST</span>
-    <span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="ticker-logo"><path fill="#000000" d="M38.09,1.44 A12,12 0 0,1 61.91,1.44 A50,50 0 0,1 98.56,38.09 A12,12 0 0,1 98.56,61.91 A50,50 0 0,1 61.91,98.56 A12,12 0 0,1 38.09,98.56 A50,50 0 0,1 1.44,61.91 A12,12 0 0,1 1.44,38.09 A50,50 0 0,1 38.09,1.44 Z"/></svg> HOOKAH PLACE WEST</span>
-    <span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="ticker-logo"><path fill="#000000" d="M38.09,1.44 A12,12 0 0,1 61.91,1.44 A50,50 0 0,1 98.56,38.09 A12,12 0 0,1 98.56,61.91 A50,50 0 0,1 61.91,98.56 A12,12 0 0,1 38.09,98.56 A50,50 0 0,1 1.44,61.91 A12,12 0 0,1 1.44,38.09 A50,50 0 0,1 38.09,1.44 Z"/></svg> HOOKAH PLACE WEST</span>
-    <span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="ticker-logo"><path fill="#000000" d="M38.09,1.44 A12,12 0 0,1 61.91,1.44 A50,50 0 0,1 98.56,38.09 A12,12 0 0,1 98.56,61.91 A50,50 0 0,1 61.91,98.56 A12,12 0 0,1 38.09,98.56 A50,50 0 0,1 1.44,61.91 A12,12 0 0,1 1.44,38.09 A50,50 0 0,1 38.09,1.44 Z"/></svg> HOOKAH PLACE WEST</span>
+    <span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="ticker-logo"><path fill="#000000" d="M38.09,1.44 A12,12 0 0,0 61.91,1.44 A50,50 0 0,1 98.56,38.09 A12,12 0 0,0 98.56,61.91 A50,50 0 0,1 61.91,98.56 A12,12 0 0,0 38.09,98.56 A50,50 0 0,1 1.44,61.91 A12,12 0 0,0 1.44,38.09 A50,50 0 0,1 38.09,1.44 Z"/></svg> HOOKAH PLACE WEST</span>
+    <span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="ticker-logo"><path fill="#000000" d="M38.09,1.44 A12,12 0 0,0 61.91,1.44 A50,50 0 0,1 98.56,38.09 A12,12 0 0,0 98.56,61.91 A50,50 0 0,1 61.91,98.56 A12,12 0 0,0 38.09,98.56 A50,50 0 0,1 1.44,61.91 A12,12 0 0,0 1.44,38.09 A50,50 0 0,1 38.09,1.44 Z"/></svg> HOOKAH PLACE WEST</span>
+    <span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="ticker-logo"><path fill="#000000" d="M38.09,1.44 A12,12 0 0,0 61.91,1.44 A50,50 0 0,1 98.56,38.09 A12,12 0 0,0 98.56,61.91 A50,50 0 0,1 61.91,98.56 A12,12 0 0,0 38.09,98.56 A50,50 0 0,1 1.44,61.91 A12,12 0 0,0 1.44,38.09 A50,50 0 0,1 38.09,1.44 Z"/></svg> HOOKAH PLACE WEST</span>
+    <span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="ticker-logo"><path fill="#000000" d="M38.09,1.44 A12,12 0 0,0 61.91,1.44 A50,50 0 0,1 98.56,38.09 A12,12 0 0,0 98.56,61.91 A50,50 0 0,1 61.91,98.56 A12,12 0 0,0 38.09,98.56 A50,50 0 0,1 1.44,61.91 A12,12 0 0,0 1.44,38.09 A50,50 0 0,1 38.09,1.44 Z"/></svg> HOOKAH PLACE WEST</span>
+    <span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="ticker-logo"><path fill="#000000" d="M38.09,1.44 A12,12 0 0,0 61.91,1.44 A50,50 0 0,1 98.56,38.09 A12,12 0 0,0 98.56,61.91 A50,50 0 0,1 61.91,98.56 A12,12 0 0,0 38.09,98.56 A50,50 0 0,1 1.44,61.91 A12,12 0 0,0 1.44,38.09 A50,50 0 0,1 38.09,1.44 Z"/></svg> HOOKAH PLACE WEST</span>
+    <span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="ticker-logo"><path fill="#000000" d="M38.09,1.44 A12,12 0 0,0 61.91,1.44 A50,50 0 0,1 98.56,38.09 A12,12 0 0,0 98.56,61.91 A50,50 0 0,1 61.91,98.56 A12,12 0 0,0 38.09,98.56 A50,50 0 0,1 1.44,61.91 A12,12 0 0,0 1.44,38.09 A50,50 0 0,1 38.09,1.44 Z"/></svg> HOOKAH PLACE WEST</span>
   </div>
 </div>
 
@@ -396,12 +365,355 @@ update();
 </script>
 
 <script>
-window.addEventListener('load', function() {
-  setTimeout(function() {
-    document.getElementById('loader').classList.add('hide');
-    setTimeout(function() { document.getElementById('loader').style.display='none'; }, 700);
-  }, 1800);
-});
+(function() {
+  const canvas = document.getElementById('loader-canvas');
+  const loaderEl = document.getElementById('loader');
+  
+  // Set up Three.js scene
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x0a0a0a, 0.015);
+  
+  // Camera
+  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.set(0, 5, 25);
+  camera.lookAt(0, 0, 0);
+  
+  // Renderer
+  const renderer = new THREE.WebGLRenderer({
+    canvas: canvas,
+    antialias: true,
+    alpha: true
+  });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  
+  // Resize handler
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+  
+  // Lights
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.25);
+  scene.add(ambientLight);
+  
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  dirLight.position.set(10, 20, 10);
+  dirLight.castShadow = true;
+  dirLight.shadow.mapSize.width = 1024;
+  dirLight.shadow.mapSize.height = 1024;
+  dirLight.shadow.bias = -0.001;
+  scene.add(dirLight);
+  
+  // Soft red point light under the shoes to give that neon brutalist glow
+  const pointLight = new THREE.PointLight(0xe3272b, 2.5, 30);
+  pointLight.position.set(0, 1, 0);
+  scene.add(pointLight);
+  
+  // Grid helper (brutalist floor)
+  const gridHelper = new THREE.GridHelper(60, 30, 0xe3272b, 0x222222);
+  gridHelper.position.y = -3;
+  scene.add(gridHelper);
+  
+  // Voxel data generator for the Lego Croc Slipper
+  function generateCrocVoxels() {
+    const list = [];
+    
+    // Sole (bottom layer)
+    for (let x = -3; x <= 3; x++) {
+      for (let z = -6; z <= 6; z++) {
+        if (z === 6 && Math.abs(x) > 1) continue;
+        if (z === -6 && Math.abs(x) > 1) continue;
+        if (z === 5 && Math.abs(x) > 2) continue;
+        if (z === -5 && Math.abs(x) > 2) continue;
+        list.push({ x, y: 0, z });
+      }
+    }
+    
+    // Side walls
+    for (let z = -5; z <= 5; z++) {
+      let maxX = 3;
+      if (z === 5) maxX = 2;
+      list.push({ x: -maxX, y: 1, z });
+      list.push({ x: maxX, y: 1, z });
+    }
+    
+    // Front clog dome (toe box)
+    for (let y = 1; y <= 3; y++) {
+      for (let z = 1; z <= 6; z++) {
+        for (let x = -3; x <= 3; x++) {
+          if (z === 6 && Math.abs(x) > 1) continue;
+          if (z === 5 && Math.abs(x) > 2) continue;
+          if (Math.abs(x) > (4 - y)) continue;
+          if (z === 6 && y > 1) continue;
+          // Hollow inside
+          if (y === 1 && Math.abs(x) < 2 && z < 4) continue;
+          if (y === 2 && Math.abs(x) < 1 && z < 3) continue;
+          list.push({ x, y, z });
+        }
+      }
+    }
+    
+    // Heel backing
+    for (let y = 1; y <= 2; y++) {
+      for (let x = -2; x <= 2; x++) {
+        list.push({ x, y, z: -6 });
+      }
+    }
+    
+    // Strap arch
+    for (let y = 1; y <= 4; y++) {
+      list.push({ x: -3, y, z: -1 });
+      list.push({ x: 3, y, z: -1 });
+    }
+    for (let x = -2; x <= 2; x++) {
+      list.push({ x, y: 4, z: -1 });
+    }
+    
+    return list;
+  }
+  
+  const crocLayout = generateCrocVoxels();
+  const scale = 0.4;
+  
+  // Function to create a 3D Lego Croc group
+  function create3DLegoCroc(shoeColor) {
+    const group = new THREE.Group();
+    const bricks = [];
+    
+    const brickGeo = new THREE.BoxGeometry(0.95 * scale, 0.58 * scale, 0.95 * scale);
+    const studGeo = new THREE.CylinderGeometry(0.28 * scale, 0.28 * scale, 0.16 * scale, 8);
+    
+    const brickMat = new THREE.MeshStandardMaterial({
+      color: shoeColor,
+      roughness: 0.15,
+      metalness: 0.1
+    });
+    
+    crocLayout.forEach((vox) => {
+      const brickGroup = new THREE.Group();
+      
+      const boxMesh = new THREE.Mesh(brickGeo, brickMat);
+      boxMesh.castShadow = true;
+      boxMesh.receiveShadow = true;
+      brickGroup.add(boxMesh);
+      
+      // Stud on top representing the classic Lego knob
+      const studMesh = new THREE.Mesh(studGeo, brickMat);
+      studMesh.position.y = 0.37 * scale;
+      studMesh.castShadow = true;
+      brickGroup.add(studMesh);
+      
+      // Target position
+      const tx = vox.x * scale;
+      const ty = (vox.y * 0.6) * scale - 1.5;
+      const tz = vox.z * scale;
+      
+      // Scatter bricks initially for the assembly effect
+      const startX = tx + (Math.random() - 0.5) * 40;
+      const startY = ty + Math.random() * 30 + 15;
+      const startZ = tz + (Math.random() - 0.5) * 40;
+      
+      brickGroup.position.set(startX, startY, startZ);
+      
+      brickGroup.userData = {
+        tx: tx,
+        ty: ty,
+        tz: tz,
+        startX: startX,
+        startY: startY,
+        startZ: startZ,
+        velocity: new THREE.Vector3(),
+        rotVelocity: new THREE.Vector3()
+      };
+      
+      group.add(brickGroup);
+      bricks.push(brickGroup);
+    });
+    
+    return { group, bricks };
+  }
+  
+  // Create Left (Red) and Right (Dark Grey/Black Lego) Crocs
+  const left = create3DLegoCroc(0xe3272b); // Hookah Place Red
+  const right = create3DLegoCroc(0x222222); // Brutalist Dark Grey
+  
+  scene.add(left.group);
+  scene.add(right.group);
+  
+  // Animation variables
+  let clock = new THREE.Clock();
+  let assembleDuration = 1.5; // 1.5 seconds assembly
+  let walkStartTime = assembleDuration;
+  let clashStartTime = walkStartTime + 1.8; // Walk for 1.8 seconds
+  let explosionStartTime = clashStartTime + 0.6; // Jump & clash for 0.6 seconds
+  let exploded = false;
+  let finished = false;
+  
+  // Trigger variables
+  let pageLoaded = false;
+  window.addEventListener('load', () => {
+    pageLoaded = true;
+  });
+  
+  // Main Animation Loop
+  function animate() {
+    if (finished) return;
+    requestAnimationFrame(animate);
+    
+    const time = clock.getElapsedTime();
+    const dt = clock.getDelta() || 0.016;
+    
+    // 1. ASSEMBLY PHASE (Flying bricks gathering together)
+    if (time < assembleDuration) {
+      const progress = time / assembleDuration;
+      const t = 1 - Math.pow(1 - progress, 3); // Cubic ease out
+      
+      const animateShoe = (shoe) => {
+        shoe.bricks.forEach((b) => {
+          const ud = b.userData;
+          b.position.x = THREE.MathUtils.lerp(ud.startX, ud.tx, t);
+          b.position.y = THREE.MathUtils.lerp(ud.startY, ud.ty, t);
+          b.position.z = THREE.MathUtils.lerp(ud.startZ, ud.tz, t);
+        });
+      };
+      
+      animateShoe(left);
+      animateShoe(right);
+      
+      // Place them on the sides
+      left.group.position.x = -4;
+      right.group.position.x = 4;
+      
+    // 2. WALKING/HOPPING PHASE
+    } else if (time < clashStartTime) {
+      // Smoothly snap positions to target to make sure assembly is complete
+      const animateShoe = (shoe) => {
+        shoe.bricks.forEach((b) => {
+          const ud = b.userData;
+          b.position.set(ud.tx, ud.ty, ud.tz);
+        });
+      };
+      animateShoe(left);
+      animateShoe(right);
+      
+      const walkTime = time - walkStartTime;
+      const speed = 7.5;
+      
+      // Left shoe hopping forward
+      left.group.position.x = -3.5;
+      left.group.position.y = Math.abs(Math.sin(walkTime * speed)) * 1.6 - 1;
+      left.group.position.z = Math.cos(walkTime * speed) * 1.5;
+      left.group.rotation.x = Math.sin(walkTime * speed) * 0.25;
+      left.group.rotation.y = 0.15;
+      
+      // Right shoe hopping forward (offset phase)
+      right.group.position.x = 3.5;
+      right.group.position.y = Math.abs(Math.sin(walkTime * speed + Math.PI)) * 1.6 - 1;
+      right.group.position.z = Math.cos(walkTime * speed + Math.PI) * 1.5;
+      right.group.rotation.x = Math.sin(walkTime * speed + Math.PI) * 0.25;
+      right.group.rotation.y = -0.15;
+      
+    // 3. JUMP AND CLASH PREPARATION
+    } else if (time < explosionStartTime) {
+      const clashProgress = (time - clashStartTime) / (explosionStartTime - clashStartTime);
+      const t = clashProgress;
+      
+      // Jump and meet in the center (x=0, y=2.5, z=0)
+      left.group.position.x = THREE.MathUtils.lerp(-3.5, -0.6, t);
+      left.group.position.y = THREE.MathUtils.lerp(-1, 3, t) + Math.sin(t * Math.PI) * 3;
+      left.group.position.z = THREE.MathUtils.lerp(0, 0, t);
+      left.group.rotation.set(t * 0.2, 0.15 - t * 0.5, t * Math.PI * 0.2);
+      
+      right.group.position.x = THREE.MathUtils.lerp(3.5, 0.6, t);
+      right.group.position.y = THREE.MathUtils.lerp(-1, 3, t) + Math.sin(t * Math.PI) * 3;
+      right.group.position.z = THREE.MathUtils.lerp(0, 0, t);
+      right.group.rotation.set(t * 0.2, -0.15 + t * 0.5, -t * Math.PI * 0.2);
+      
+    // 4. EXPLOSION & DISASSEMBLY PHASE
+    } else {
+      if (!exploded) {
+        exploded = true;
+        // Assign random explosive physical velocities to every single brick
+        const explodeShoe = (shoe, dirFactor) => {
+          shoe.bricks.forEach((b) => {
+            const ud = b.userData;
+            
+            // Get brick global target position in scene
+            const globalPos = new THREE.Vector3(ud.tx, ud.ty, ud.tz).applyMatrix4(shoe.group.matrixWorld);
+            b.position.copy(globalPos);
+            
+            // Set explosive velocity vectors radiating outwards
+            ud.velocity.set(
+              (Math.random() - 0.5) * 32 + (dirFactor * 10),
+              (Math.random() * 26) + 12,
+              (Math.random() - 0.5) * 32
+            );
+            
+            // Tumble rotation velocities
+            ud.rotVelocity.set(
+              (Math.random() - 0.5) * 12,
+              (Math.random() - 0.5) * 12,
+              (Math.random() - 0.5) * 12
+            );
+          });
+          // Remove groups constraints so elements move in global space
+          scene.attach(shoe.group);
+        };
+        
+        explodeShoe(left, -1);
+        explodeShoe(right, 1);
+      }
+      
+      // Update exploding physics for all bricks
+      const explosionTime = time - explosionStartTime;
+      
+      const updatePhysics = (shoe) => {
+        shoe.bricks.forEach((b) => {
+          const ud = b.userData;
+          // Apply gravity
+          ud.velocity.y -= 38 * dt;
+          
+          // Apply linear friction and update positions
+          b.position.addScaledVector(ud.velocity, dt);
+          
+          // Update rotations
+          b.rotation.x += ud.rotVelocity.x * dt;
+          b.rotation.y += ud.rotVelocity.y * dt;
+          b.rotation.z += ud.rotVelocity.z * dt;
+        });
+      };
+      
+      updatePhysics(left);
+      updatePhysics(right);
+      
+      // Fade out loader screen and grid helper
+      const fadeProgress = Math.min(1, explosionTime * 1.5);
+      loaderEl.style.opacity = 1 - fadeProgress;
+      gridHelper.material.opacity = 1 - fadeProgress;
+      
+      // Complete and hide
+      if (fadeProgress >= 1) {
+        finished = true;
+        loaderEl.style.display = 'none';
+        renderer.dispose();
+      }
+    }
+    
+    // Rotate lights slightly for realistic brick shines
+    dirLight.position.x = 10 + Math.sin(time) * 4;
+    dirLight.position.z = 10 + Math.cos(time) * 4;
+    
+    renderer.render(scene, camera);
+  }
+  
+  // Start Three.js loop
+  requestAnimationFrame(animate);
+})();
+
 // Clone ticker for seamless loop
 var inner = document.getElementById('ticker-inner');
 inner.innerHTML += inner.innerHTML;

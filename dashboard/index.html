@@ -314,7 +314,7 @@ function computeKPI(rows, sid, extraInv){
 }
 function renderKPI(){
   const sid=INVS[cINV];
-  const m=barOn?computeKPI(getRows(key()),sid,1000000):M[key()];
+  const m=computeKPI(getRows(key()),sid,barOn?1000000:0);
   if(!m)return;
   document.getElementById('desc').innerHTML='<b>'+INVN[sid]+'</b> — '+DESC[sid]+(barOn?' <span style="color:#4caf50;font-weight:900">| 🍺 +1 000 000 ₽ инвестиций (Алко-бар)</span>':'');
   const rc=m.roi>=0?'gr':'rd';

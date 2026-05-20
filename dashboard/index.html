@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
-@keyframes brickDrop{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
 @keyframes studPop{0%{transform:scale(0.8)}60%{transform:scale(1.1)}100%{transform:scale(1)}}
 @keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulse{0%,100%{box-shadow:0 4px 0 #003d7a}50%{box-shadow:0 4px 0 #0077cc}}
@@ -15,26 +14,20 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#1a1a1a;color:#f0f0f0;font-family:'Nunito',Arial,sans-serif;font-size:11px;}
 
-/* ── HEADER (LEGO Yellow Brick) ── */
+/* ── HEADER ── */
 .hdr{
   padding:14px 20px;
-  background:#FFD700;
-  border-bottom:4px solid #c8a900;
+  background:#003300;
+  border-bottom:4px solid #001a00;
   display:flex;flex-wrap:wrap;gap:10px;align-items:center;
   position:relative;
-  animation:brickDrop .4s ease;
 }
-.hdr::after{
-  content:'';position:absolute;bottom:-12px;left:0;right:0;height:12px;
-  background:repeating-linear-gradient(90deg,#c8a900 0,#c8a900 16px,#FFD700 16px,#FFD700 24px);
-  opacity:.5;
-}
-h1{color:#1a1a1a;font-size:15px;font-weight:900;flex:1;text-transform:uppercase;letter-spacing:.5px;}
-h1 span{font-size:10px;color:#5a4a00;font-weight:700;text-transform:none;letter-spacing:0;}
+h1{color:#f0f0f0;font-size:15px;font-weight:900;flex:1;text-transform:uppercase;letter-spacing:.5px;}
+h1 span{font-size:10px;color:#69f0ae;font-weight:700;text-transform:none;letter-spacing:0;}
 
 /* ── TABS ── */
 .tabs{display:flex;gap:5px;flex-wrap:wrap;align-items:center;}
-.sep{width:3px;height:28px;background:#c8a900;border-radius:2px;margin:0 3px;}
+.sep{width:3px;height:28px;background:#69f0ae;border-radius:2px;margin:0 3px;}
 
 .t{
   padding:7px 14px;border-radius:4px;cursor:pointer;
@@ -176,7 +169,7 @@ tr:nth-child(even) td:first-child{background:#1e1e1e;}
 <body>
 
 <div class="hdr">
-  <h1>🧱 Финмодель — Все расходы <span id='inv-hdr'>| 13 000 000 руб | 16.5%/год (ключ 14.5%+2%)</span></h1>
+  <h1>Финмодель — Все расходы <span id='inv-hdr'>| 13 000 000 руб | 16.5%/год (ключ 14.5%+2%)</span></h1>
   <div class="tabs">
     <button class="t a" onclick="sBF(0)">Базовый</button>
     <button class="t"   onclick="sBF(1)">Оптимистичный</button>
@@ -316,9 +309,8 @@ function computeKPI(rows, sid, extraInv){
   var schedule=calculateDebtSchedule(rows,sid,extraInv);
   var last=schedule[schedule.length-1];
   var totalInv=13000000+(extraInv||0);
-  var invP='нет',mgrP='нет';
+  var invP=last.repM?'Месяц '+last.repM:'нет',mgrP='нет';
   for(var i=0;i<rows.length;i++){
-    if(schedule[i].inv>0&&invP==='нет')invP='Месяц '+rows[i][0];
     if(schedule[i].mgr>0&&mgrP==='нет')mgrP='Месяц '+rows[i][0];
   }
   var lr=rows[rows.length-1];

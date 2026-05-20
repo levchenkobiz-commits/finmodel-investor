@@ -223,8 +223,8 @@ function tip(text){
 }
 function minRentForMonth(mo){return mo<=12?350000:mo<=24?400000:450000;}
 
-function recalcRunningProfit(rows){
-  var cum=-13000000;
+function recalcRunningProfit(rows, extraInv){
+  var cum=-(13000000+(extraInv||0));
   return rows.map(function(r){
     var nr=r.slice();
     nr[7]=Math.max(minRentForMonth(nr[0]),Math.round(nr[3]*0.10));
@@ -240,7 +240,7 @@ function calculateDebtSchedule(rows,sid,extraInv){
   var RATE=0.165/12;
   var TOTAL_INV=13000000+extraInv;
   var debt=sid===1?Math.round(TOTAL_INV*0.5):TOTAL_INV;
-  var repM=null,cumInv=0,cumMgr=0,cumPaidIntr=0;
+  var repM=null,paybackM=null,cumInv=0,cumMgr=0,cumPaidIntr=0,cumTelo=0;
   return rows.map(function(r){
     var mo=r[0],profit=r[17];
     var intr=0,paidIntr=0,telo=0,inv_=0,mgr_=0;
@@ -283,7 +283,7 @@ function calculateDebtSchedule(rows,sid,extraInv){
           paidIntr=Math.min(profit,intr);
           var rem=profit-paidIntr;
           telo=Math.min(rem,debt);
-          debt=Math.max(0,debt-telo);
+          debt=Math.max(0,debt-telo+(intr-paidIntr));
           if(debt===0){
             var left2=rem-telo;
             inv_=Math.round(left2*0.25);
@@ -301,7 +301,10 @@ function calculateDebtSchedule(rows,sid,extraInv){
     cumInv+=inv_;
     cumMgr+=mgr_;
     cumPaidIntr+=paidIntr;
-    return {intr:paidIntr,telo:telo,debt:debt,inv:inv_,mgr:mgr_,cumInv:cumInv,cumMgr:cumMgr,cumIntr:cumPaidIntr,repM:repM};
+    cumTelo+=telo;
+    var investorCash=cumInv+cumPaidIntr+cumTelo;
+    if(paybackM===null&&investorCash>=TOTAL_INV)paybackM=mo;
+    return {intr:paidIntr,telo:telo,debt:debt,inv:inv_,mgr:mgr_,cumInv:cumInv,cumMgr:cumMgr,cumIntr:cumPaidIntr,cumTelo:cumTelo,investorCash:investorCash,repM:repM,paybackM:paybackM};
   });
 }
 
@@ -309,7 +312,8 @@ function computeKPI(rows, sid, extraInv){
   var schedule=calculateDebtSchedule(rows,sid,extraInv);
   var last=schedule[schedule.length-1];
   var totalInv=13000000+(extraInv||0);
-  var invP=last.repM?'Месяц '+last.repM:'нет',mgrP='нет';
+  var invTotal=last.investorCash;
+  var invP=last.paybackM?'Месяц '+last.paybackM:'нет',mgrP='нет';
   for(var i=0;i<rows.length;i++){
     if(schedule[i].mgr>0&&mgrP==='нет')mgrP='Месяц '+rows[i][0];
   }
@@ -318,9 +322,9 @@ function computeKPI(rows, sid, extraInv){
   var inv_share=sid===3?0.25:0.5;
   var invBiz=Math.round(bizVal*inv_share);
   var mgrBiz=bizVal-invBiz;
-  var roi=last.cumInv>0?Math.round((last.cumInv-totalInv)/(totalInv/100)):0;
-  var mult=last.cumInv>0?Math.round(last.cumInv/totalInv*100)/100:0;
-  return {invP:invP,mgrP:mgrP,invT:last.cumInv,mgrT:last.cumMgr,roi:roi,mult:mult,bizVal:bizVal,invBiz:invBiz,mgrBiz:mgrBiz,cumIntr:last.cumIntr};
+  var roi=invTotal>0?Math.round((invTotal-totalInv)/(totalInv/100)):0;
+  var mult=invTotal>0?Math.round(invTotal/totalInv*100)/100:0;
+  return {invP:invP,mgrP:mgrP,invT:invTotal,mgrT:last.cumMgr,roi:roi,mult:mult,bizVal:bizVal,invBiz:invBiz,mgrBiz:mgrBiz,cumIntr:last.cumIntr};
 }
 function renderKPI(){
   const sid=INVS[cINV];
@@ -329,12 +333,13 @@ function renderKPI(){
   document.getElementById('desc').innerHTML='<b>'+INVN[sid]+'</b> — '+DESC[sid]+(barOn?' <span style="color:#4caf50;font-weight:900">| 🍺 +1 000 000 ₽ инвестиций (Алко-бар)</span>':'');
   const rc=m.roi>=0?'gr':'rd';
   const bizFmt=m.bizVal>0?fmt(m.bizVal)+' руб.':'убыток';
-  const tipItogo=tip('✅ Проценты инвестору включены | ❌ Доля при продаже не включена');
-  const tipROI=tip('❌ Доля при продаже не учтена в ROI');
+  const tipPayback=tip('Месяц, когда накопленные выплаты инвестору: дивиденды + тело долга + проценты, покрывают вложения');
+  const tipItogo=tip('✅ Включены дивиденды, возврат тела долга и проценты | ❌ Доля при продаже не включена');
+  const tipROI=tip('✅ Считает полный денежный поток инвестора | ❌ Доля при продаже не учтена');
   const tipDolya=tip('❌ Не учтена в «Итого инвестору» и в ROI');
   const tipBiz=tip('Прибыль 60-го месяца × 25 = оценка стоимости бизнеса');
   document.getElementById('kpis').innerHTML=
-    '<div class="kpi"><div class="kl">Окупаемость инвестора</div><div class="kv bl">'+m.invP+'</div></div>'+
+    '<div class="kpi"><div class="kl">Окупаемость инвестора '+tipPayback+'</div><div class="kv bl">'+m.invP+'</div></div>'+
     '<div class="kpi"><div class="kl">Первый доход управляющего</div><div class="kv gr">'+m.mgrP+'</div></div>'+
     '<div class="kpi"><div class="kl">Итого инвестор (60 мес.) '+tipItogo+'</div><div class="kv bl">'+fmt(m.invT)+' руб.</div></div>'+
     '<div class="kpi"><div class="kl">Итого управляющий (60 мес.)</div><div class="kv gr">'+fmt(m.mgrT)+' руб.</div></div>'+
@@ -397,7 +402,7 @@ function toggleBar(){
 }
 function getRows(k){
   var rows=D[k];
-  if(!barOn)return recalcRunningProfit(rows);
+  if(!barOn)return recalcRunningProfit(rows,0);
   var bonusFloor=220000;
   return recalcRunningProfit(rows.map(function(r){
     var nr=r.slice();
@@ -416,7 +421,7 @@ function getRows(k){
     nr[9]=newTax;
     nr[10]=newAmort;
     return nr;
-  }));
+  }),1000000);
 }
 
 

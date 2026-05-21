@@ -202,6 +202,12 @@ const D={"B_1":[[1,14,2800,1176000,152880,230000,220000,350000,17640,94080,11760
 const M={"B_1":{"invP":"Месяц 19","mgrP":"Месяц 21","invT":62640302,"mgrT":46892676,"roi":381.8,"mult":4.82,"bizVal":63939075,"invBiz":31969538,"mgrBiz":31969538,"cumIntr":1125585},"B_2":{"invP":"Месяц 19","mgrP":"Месяц 19","invT":61266489,"mgrT":48266489,"roi":371.3,"mult":4.71,"bizVal":63939075,"invBiz":31969538,"mgrBiz":31969538,"cumIntr":0},"B_3":{"invP":"Месяц 19","mgrP":"Месяц 21","invT":47009410,"mgrT":62523568,"roi":261.6,"mult":3.62,"bizVal":63939075,"invBiz":21313025,"mgrBiz":42626050,"cumIntr":2251171},"O_1":{"invP":"Месяц 16","mgrP":"Месяц 17","invT":72305606,"mgrT":57154981,"roi":456.2,"mult":5.56,"bizVal":70095075,"invBiz":35047538,"mgrBiz":35047538,"cumIntr":992572},"O_2":{"invP":"Месяц 16","mgrP":"Месяц 16","invT":71230294,"mgrT":58230294,"roi":447.9,"mult":5.48,"bizVal":70095075,"invBiz":35047538,"mgrBiz":35047538,"cumIntr":0},"O_3":{"invP":"Месяц 16","mgrP":"Месяц 17","invT":53253945,"mgrT":76206642,"roi":309.6,"mult":4.1,"bizVal":70095075,"invBiz":23365025,"mgrBiz":46730050,"cumIntr":1985143},"I_1":{"invP":"Месяц 12","mgrP":"Месяц 13","invT":107114434,"mgrT":92554838,"roi":724,"mult":8.24,"bizVal":108918825,"invBiz":54459412,"mgrBiz":54459412,"cumIntr":779798},"I_2":{"invP":"Месяц 12","mgrP":"Месяц 12","invT":106334636,"mgrT":93334636,"roi":718,"mult":8.18,"bizVal":108918825,"invBiz":54459412,"mgrBiz":54459412,"cumIntr":0},"I_3":{"invP":"Месяц 12","mgrP":"Месяц 13","invT":76262822,"mgrT":123406450,"roi":486.6,"mult":5.87,"bizVal":108918825,"invBiz":36306275,"mgrBiz":72612550,"cumIntr":1559597}};
 const HDR=["Месяц","Кальянов/день","Средний чек","Выручка","Себестоимость (13%)","ФОТ (Фикс)","ФОТ (Бонус)","Аренда","Эквайринг (1.5%)","Налог (8%)","Амортизация (1%)","Коммуналка","Клининг","Хоз. нужды","Мелкие фиксы (<20к)","Яндекс (Маркетинг)","Индексация (+8%)","Чистая прибыль","Накопленная прибыль","Проценты/мес","Тело долга","Остаток долга","Инвестору/мес","Управляющему/мес","Инвестор накопл.","Управл. накопл.","Накопл. %"];
 const CH=new Set([11,13,14,17,18,19,20,21,22,23,24,25,26]);
+const BASE_CHECK_UPLIFT=100;
+const BAR_CHECK_UPLIFT=200;
+const ROYALTY=95000;
+const ROYALTY_COL=17;
+const DISPLAY_HDR=HDR.slice(0,ROYALTY_COL).concat(["Роялти"],HDR.slice(ROYALTY_COL));
+const DISPLAY_CH=new Set([11,13,14,17,18,19,20,21,22,23,24,25,26,27]);
 const BFK=['B','O','I'];
 const INVS=[2,3];
 const DESC={
@@ -230,11 +236,29 @@ function recalcRunningProfit(rows, extraInv){
   return rows.map(function(r){
     var nr=r.slice();
     nr[7]=Math.max(minRentForMonth(nr[0]),Math.round(nr[3]*0.10));
-    nr[17]=nr[3]-nr[4]-nr[5]-nr[6]-nr[7]-nr[8]-nr[9]-nr[10]-nr[11]-nr[12]-nr[13]-nr[14]-nr[15]-nr[16];
+    nr[17]=nr[3]-nr[4]-nr[5]-nr[6]-nr[7]-nr[8]-nr[9]-nr[10]-nr[11]-nr[12]-nr[13]-nr[14]-nr[15]-nr[16]-ROYALTY;
     cum+=nr[17];
     nr[18]=cum;
     return nr;
   });
+}
+
+function applyCheckUplift(row, checkUplift){
+  var nr=row.slice();
+  var oldRevenue=nr[3];
+  nr[2]=nr[2]+checkUplift;
+  nr[3]=nr[1]*nr[2]*30;
+  nr[4]=Math.round(nr[3]*0.13);
+  nr[8]=Math.round(nr[3]*0.015);
+  nr[9]=Math.round(nr[3]*0.08);
+  nr[10]=Math.round(nr[3]*0.01);
+  if(row[6]>220000){
+    nr[6]=Math.round(nr[3]*0.12);
+  }
+  if(row[7]>minRentForMonth(row[0]) || row[7]===Math.round(oldRevenue*0.10)){
+    nr[7]=Math.round(nr[3]*0.10);
+  }
+  return nr;
 }
 
 function calculateDebtSchedule(rows,sid,extraInv){
@@ -358,8 +382,9 @@ function renderTable(){
   const repM=live.length?live[live.length-1].repM:null;
 
   let h='<table><thead><tr>';
-  HDR.forEach((hh,ci)=>{
-    let cls=ci>=19?(ci===26?'bz':'iv'):'';
+  DISPLAY_HDR.forEach((hh,ci)=>{
+    let dataCi=ci>ROYALTY_COL?ci-1:ci;
+    let cls=dataCi>=19?(dataCi===26?'bz':'iv'):'';
     h+='<th class="'+cls+'">'+hh+'</th>';
   });
   h+='</tr></thead><tbody>';
@@ -368,19 +393,22 @@ function renderTable(){
     const mo=r[0];
     const lv=live[idx];
     h+='<tr class="'+(mo===repM?'repaid':'')+'">';
-    r.forEach(function(v,ci){
-      let c=CH.has(ci)?'ch':'';
+    DISPLAY_HDR.forEach(function(_,ci){
+      let isRoyalty=ci===ROYALTY_COL;
+      let dataCi=ci>ROYALTY_COL?ci-1:ci;
+      let v=isRoyalty?ROYALTY:r[dataCi];
+      let c=DISPLAY_CH.has(ci)?'ch':'';
       let dispV=v;
-      if(ci===19){dispV=lv.intr;}
-      if(ci===20){dispV=lv.telo;}
-      if(ci===21){dispV=lv.debt;}
-      if(ci===22){dispV=lv.inv;c='ci';}
-      if(ci===23){dispV=lv.mgr;c=(dispV<0?'cn':'cm');}
-      if(ci===24){dispV=lv.cumInv;c='ci';}
-      if(ci===25){dispV=lv.cumMgr;c=(dispV<0?'cn':'cm');}
-      if(ci===26){dispV=lv.cumIntr;c='or';}
-      if(ci===17||ci===18)c+=(v<0?' cn':'');
-      h+='<td class="'+c.trim()+'">'+(ci===0?(mo===repM?'★ '+mo:String(mo)):fmt(dispV))+'</td>';
+      if(dataCi===19){dispV=lv.intr;}
+      if(dataCi===20){dispV=lv.telo;}
+      if(dataCi===21){dispV=lv.debt;}
+      if(dataCi===22){dispV=lv.inv;c='ci';}
+      if(dataCi===23){dispV=lv.mgr;c=(dispV<0?'cn':'cm');}
+      if(dataCi===24){dispV=lv.cumInv;c='ci';}
+      if(dataCi===25){dispV=lv.cumMgr;c=(dispV<0?'cn':'cm');}
+      if(dataCi===26){dispV=lv.cumIntr;c='or';}
+      if(!isRoyalty&&(dataCi===17||dataCi===18))c+=(v<0?' cn':'');
+      h+='<td class="'+c.trim()+'">'+(dataCi===0?(mo===repM?'★ '+mo:String(mo)):fmt(dispV))+'</td>';
     });
     h+='</tr>';
   });
@@ -402,26 +430,10 @@ function toggleBar(){
 }
 function getRows(k){
   var rows=D[k];
-  if(!barOn)return recalcRunningProfit(rows,0);
-  var bonusFloor=220000;
+  var checkUplift=BASE_CHECK_UPLIFT+(barOn?BAR_CHECK_UPLIFT:0);
   return recalcRunningProfit(rows.map(function(r){
-    var nr=r.slice();
-    var extra=nr[1]*200*30;
-    nr[2]=nr[2]+200;
-    nr[3]=nr[3]+extra;
-    // Пересчёт переменных затрат от новой выручки.
-    var newCOGS=Math.round(nr[3]*0.13);
-    var newAcqui=Math.round(nr[3]*0.015);
-    var newTax=Math.round(nr[3]*0.08);
-    var newAmort=Math.round(nr[3]*0.01);
-    var newBonus=r[6]>bonusFloor?Math.round(nr[3]*0.12):r[6];
-    nr[4]=newCOGS;
-    nr[6]=newBonus;
-    nr[8]=newAcqui;
-    nr[9]=newTax;
-    nr[10]=newAmort;
-    return nr;
-  }),1000000);
+    return applyCheckUplift(r,checkUplift);
+  }),barOn?1000000:0);
 }
 
 

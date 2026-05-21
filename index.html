@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hookah Place West</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Bebas+Neue&family=Unbounded:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --red: #e3272b;
@@ -17,6 +17,7 @@
   --muted: #888;
   --border: #2a2a2a;
   --accent: #e3272b;
+  --font-secondary: 'Unbounded', 'Inter', sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
@@ -466,6 +467,28 @@ section{padding:80px 60px;}
 footer{padding:40px 60px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;}
 footer .logo{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--red);}
 footer p{font-size:0.85rem;color:var(--muted);}
+
+:where(
+  .hero-badge,
+  .hero-sub,
+  .hero-stat .lbl,
+  .section-label,
+  .market-card h3,
+  .market-card p,
+  .comp-table th,
+  .comp-table td,
+  .adv-card p,
+  .t,
+  #desc,
+  .kpi .kn,
+  .subtab,
+  #tbl th,
+  .alc-row,
+  .fkpi .fkn,
+  footer p
+){
+  font-family:var(--font-secondary);
+}
 
 @media(max-width:768px){
   .hero,section,footer{padding:40px 20px;}

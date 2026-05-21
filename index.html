@@ -414,6 +414,18 @@ section{padding:80px 60px;}
 .adv-icon{font-size:2.5rem;margin-bottom:16px;}
 .adv-card h3{font-size:1.1rem;font-weight:700;margin-bottom:10px;}
 .adv-card p{font-size:0.9rem;color:var(--muted);line-height:1.6;}
+.calc-cta{display:flex;justify-content:center;margin-top:42px;}
+.calc-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:260px;padding:18px 36px;
+  background:var(--red);color:#fff;border:2px solid var(--red);
+  border-radius:10px;font-size:1.05rem;font-weight:900;
+  text-transform:uppercase;letter-spacing:.8px;text-decoration:none;
+  box-shadow:6px 6px 0 #000,6px 6px 0 2px var(--red);
+  transition:all .22s cubic-bezier(.25,1,.5,1);
+}
+.calc-btn:hover{transform:translate(4px,4px);box-shadow:2px 2px 0 #000,2px 2px 0 2px #fff;background:#fff;color:#000;border-color:#fff;}
+.calc-btn:active{transform:translate(6px,6px);box-shadow:0 0 0 #000,0 0 0 2px #fff;}
 
 /* FINANCE SECTION */
 .fin-section{background:var(--card);border-radius:24px;padding:40px;margin-top:40px;}
@@ -459,6 +471,8 @@ footer p{font-size:0.85rem;color:var(--muted);}
   .hero,section,footer{padding:40px 20px;}
   .market-grid{grid-template-columns:1fr;}
   .hero h1{font-size:3rem;}
+  .calc-cta{margin-top:32px;}
+  .calc-btn{width:100%;min-width:0;padding:16px 24px;}
 }
 </style>
 
@@ -628,6 +642,9 @@ footer p{font-size:0.85rem;color:var(--muted);}
       <h3>Прозрачный проект</h3>
       <p>Понятная структура инвестиций, окупаемости и доходности без лишнего шума на странице.</p>
     </div>
+  </div>
+  <div class="calc-cta">
+    <a class="calc-btn" href="https://levchenkobiz-commits.github.io/finmodel-investor/dashboard/">Посчитаем?</a>
   </div>
 </section>
 

@@ -63,6 +63,7 @@ h1 span{font-size:10px;color:#69f0ae;font-weight:700;text-transform:none;letter-
 .kpis{
   display:flex;gap:8px;padding:10px 20px;
   background:#161616;border-bottom:2px solid #2a2a2a;flex-wrap:wrap;
+  position:relative;z-index:2000;overflow:visible;
 }
 .kpi{
   background:#222;
@@ -70,7 +71,9 @@ h1 span{font-size:10px;color:#69f0ae;font-weight:700;text-transform:none;letter-
   border-radius:4px;padding:9px 12px;min-width:130px;flex:1;
   animation:slideUp .3s ease both;
   transition:transform .1s,border-top-color .1s;
+  position:relative;z-index:1;overflow:visible;
 }
+.kpi:hover{z-index:3000;}
 .kpi:hover{transform:translateY(-2px);border-top-color:#FFD700;}
 .kl{
   font-size:9px;color:#666;text-transform:uppercase;
@@ -80,7 +83,7 @@ h1 span{font-size:10px;color:#69f0ae;font-weight:700;text-transform:none;letter-
 .kv{font-size:14px;font-weight:900;}
 
 /* ── TOOLTIP DESCRIPTOR ── */
-.tip-wrap{position:relative;display:inline-flex;align-items:center;}
+.tip-wrap{position:relative;display:inline-flex;align-items:center;z-index:4000;}
 .tip-icon{
   display:inline-flex;align-items:center;justify-content:center;
   width:14px;height:14px;border-radius:3px;
@@ -90,16 +93,17 @@ h1 span{font-size:10px;color:#69f0ae;font-weight:700;text-transform:none;letter-
 }
 .tip-icon:hover{background:#FFD700;color:#1a1a1a;}
 .tip-text{
-  display:none;position:absolute;bottom:120%;left:50%;transform:translateX(-50%);
+  display:none;position:absolute;top:18px;left:50%;transform:translateX(-50%);
   background:#1a1a1a;color:#f0f0f0;border:2px solid #FFD700;
   border-radius:4px;padding:7px 10px;font-size:10px;
-  white-space:nowrap;z-index:999;font-weight:700;
+  white-space:normal;z-index:999999;font-weight:700;
+  width:max-content;max-width:320px;
   box-shadow:0 4px 12px rgba(0,0,0,.6);line-height:1.6;
   text-transform:none;letter-spacing:0;
 }
 .tip-text::after{
-  content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);
-  border:5px solid transparent;border-top-color:#FFD700;
+  content:'';position:absolute;bottom:100%;left:50%;transform:translateX(-50%);
+  border:5px solid transparent;border-bottom-color:#FFD700;
 }
 .tip-wrap:hover .tip-text{display:block;animation:studPop .15s ease;}
 
@@ -175,9 +179,8 @@ tr:nth-child(even) td:first-child{background:#1e1e1e;}
     <button class="t"   onclick="sBF(1)">Оптимистичный</button>
     <button class="t"   onclick="sBF(2)">Идеальный</button>
     <div class="sep"></div>
-    <button class="t b" onclick="sINV(0)">А: Долг 50%+50%</button>
-    <button class="t b" onclick="sINV(1)">Б: Возврат 100% → 50/50</button>
-    <button class="t b" onclick="sINV(2)">В: Долг 100%+25%</button>
+    <button class="t b" onclick="sINV(0)">А: Возврат 100% → 50/50</button>
+    <button class="t b" onclick="sINV(1)">Б: Долг 100%+25%</button>
       <div class="sep"></div>
     <button class="t bar-off" id="bar-btn" onclick="toggleBar()">🍺 Алко-бар +200₽</button>
   </div>
@@ -200,14 +203,13 @@ const M={"B_1":{"invP":"Месяц 19","mgrP":"Месяц 21","invT":62640302,"m
 const HDR=["Месяц","Кальянов/день","Средний чек","Выручка","Себестоимость (13%)","ФОТ (Фикс)","ФОТ (Бонус)","Аренда","Эквайринг (1.5%)","Налог (8%)","Амортизация (1%)","Коммуналка","Клининг","Хоз. нужды","Мелкие фиксы (<20к)","Яндекс (Маркетинг)","Индексация (+8%)","Чистая прибыль","Накопленная прибыль","Проценты/мес","Тело долга","Остаток долга","Инвестору/мес","Управляющему/мес","Инвестор накопл.","Управл. накопл.","Накопл. %"];
 const CH=new Set([11,13,14,17,18,19,20,21,22,23,24,25,26]);
 const BFK=['B','O','I'];
-const INVS=[1,2,3];
+const INVS=[2,3];
 const DESC={
-  '1':'А: Долг 6 500 000 (50%) под 16.5%/год. Инвестор получает 50% прибыли как дивиденды с первого месяца. Управляющий тратит свои 50% на погашение долга (проценты + тело). После погашения — оба получают 50%.',
-  '2':'Б: Возврат 13 000 000 руб без процентов из прибыли. После полного возврата — прибыль 50/50. Провал: возврат 6 500 000 без процентов.',
-  '3':'В: Долг 13 000 000 руб под 16.5%/год. Вся прибыль на погашение. После выплаты: инвестор 25% прибыли, управляющий 75%. Провал: 6 500 000 + проценты.'
+  '2':'А: Возврат 13 000 000 руб без процентов из прибыли. После полного возврата — прибыль 50/50. Провал: возврат 6 500 000 без процентов.',
+  '3':'Б: Долг 13 000 000 руб под 16.5%/год. Проценты начисляются и выплачиваются инвестору каждый месяц при наличии долга. Прибыль направляется на тело долга. После выплаты: инвестор 25% прибыли, управляющий 75%. Провал: 6 500 000 + проценты.'
 };
-const INVN={'1':'А: Долг 50%+50% доли','2':'Б: Возврат 100%, затем 50/50','3':'В: Долг 100%+25% доли'};
-var _s=document.createElement("style");_s.textContent=".tip-text{z-index:99999!important;}.hdr,.tabs,.t{overflow:visible!important;}";document.head.appendChild(_s);var _b=document.querySelectorAll(".t:not(.b)");if(_b[0])_b[0].textContent="\u0411\u0430\u0437\u043e\u0432\u044b\u0439";if(_b[1])_b[1].textContent="\u041e\u043f\u0442\u0438\u043c\u0438\u0441\u0442\u0438\u0447\u043d\u044b\u0439";if(_b[2])_b[2].textContent="\u0418\u0434\u0435\u0430\u043b\u044c\u043d\u044b\u0439";
+const INVN={'2':'А: Возврат 100%, затем 50/50','3':'Б: Долг 100%+25% доли'};
+var _s=document.createElement("style");_s.textContent=".tip-text{z-index:999999!important;}.hdr,.tabs,.t,.kpis,.kpi,.tip-wrap{overflow:visible!important;}";document.head.appendChild(_s);var _b=document.querySelectorAll(".t:not(.b)");if(_b[0])_b[0].textContent="\u0411\u0430\u0437\u043e\u0432\u044b\u0439";if(_b[1])_b[1].textContent="\u041e\u043f\u0442\u0438\u043c\u0438\u0441\u0442\u0438\u0447\u043d\u044b\u0439";if(_b[2])_b[2].textContent="\u0418\u0434\u0435\u0430\u043b\u044c\u043d\u044b\u0439";
 let cBF=0,cINV=0;
 function fmt(n){return typeof n==='number'?Math.round(n).toLocaleString('ru-RU'):n;}
 function key(){return BFK[cBF]+'_'+INVS[cINV];}
@@ -278,12 +280,12 @@ function calculateDebtSchedule(rows,sid,extraInv){
       }
     } else {
       intr=debt>0?Math.round(debt*RATE):0;
+      paidIntr=intr;
       if(profit>0){
         if(debt>0){
-          paidIntr=Math.min(profit,intr);
-          var rem=profit-paidIntr;
+          var rem=profit;
           telo=Math.min(rem,debt);
-          debt=Math.max(0,debt-telo+(intr-paidIntr));
+          debt=Math.max(0,debt-telo);
           if(debt===0){
             var left2=rem-telo;
             inv_=Math.round(left2*0.25);
@@ -293,8 +295,6 @@ function calculateDebtSchedule(rows,sid,extraInv){
           inv_=Math.round(profit*0.25);
           mgr_=profit-inv_;
         }
-      } else if(debt>0) {
-        debt+=intr;
       }
     }
     if(debt===0&&repM===null&&mo>1)repM=mo;
@@ -434,6 +434,7 @@ function toggleGeo(){
   btn.textContent = (open?'▶':'▼') + ' Гео Аналитика и конкуренты';
 }
 document.querySelectorAll('.t:not(.b)')[0].classList.add('a');
+document.querySelectorAll('.t.b')[0].classList.add('a');
 update();
 </script>
 <div class="geo-wrap" id="geo-wrap">

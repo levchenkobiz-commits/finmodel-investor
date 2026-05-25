@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -676,8 +676,8 @@ const BFK=['B','O','I'];
 const INVS=[1,2,3];
 const DESC={
   '1':'А: Долг 6 500 000 (50%) под 16.5%/год. Инвестор получает 50% прибыли как дивиденды с первого месяца. Управляющий тратит свои 50% на погашение долга (проценты + тело). После погашения — оба получают 50%.',
-  '2':'Б: Возврат 13 000 000 руб без процентов из прибыли. После полного возврата — прибыль 50/50. Провал: возврат 6 500 000 без процентов.',
-  '3':'В: Долг 13 000 000 руб под 16.5%/год. Вся прибыль на погашение. После выплаты: инвестор 33% прибыли, управляющий 67%. Провал: 6 500 000 + проценты.'
+  '2':'Б: Возврат 13 000 000 руб без процентов из прибыли. После полного возврата — прибыль 50/50.',
+  '3':'В: Долг 13 000 000 руб под 16.5%/год. Вся прибыль на погашение. После выплаты: инвестор 33% прибыли, управляющий 67%.'
 };
 const INVN={'1':'А: Долг 50%+50% доли','2':'Б: Возврат 100%, затем 50/50','3':'В: Долг 100%+33% доли'};
 (function(){var S=35000;for(var k in D){var rows=D[k];var cd=0;for(var i=0;i<rows.length;i++){var r=rows[i];if(r[12]===70000){r[12]=35000;r[17]+=S;cd+=S;r[18]+=cd;}}for(var i=0;i<rows.length;i++){rows[i][24]=(i>0?rows[i-1][24]:0)+Math.max(0,rows[i][22]);rows[i][25]=(i>0?rows[i-1][25]:0)+Math.max(0,rows[i][23]);}}["O_1","O_2","O_3"].forEach(function(k){var rows=D[k];for(var i=48;i<60;i++){var r=rows[i];var rt=3700/r[2],nv=Math.round(r[3]*rt);r[2]=3700;r[3]=nv;r[4]=Math.round(nv*0.13);r[6]=Math.round(r[6]*rt);r[8]=Math.round(nv*0.015);r[9]=Math.round(r[9]*rt);r[10]=Math.round(nv*0.01);r[17]=r[3]-r[4]-r[5]-r[6]-r[7]-r[8]-r[9]-r[10]-r[11]-r[12]-r[13]-r[14]-r[15]+r[16];}for(var i=48;i<rows.length;i++)rows[i][18]=rows[i-1][18]+rows[i][17];for(var i=48;i<rows.length;i++){rows[i][24]=(i>0?rows[i-1][24]:0)+Math.max(0,rows[i][22]);rows[i][25]=(i>0?rows[i-1][25]:0)+Math.max(0,rows[i][23]);}});["I_1","I_2","I_3"].forEach(function(k){var rows=D[k];for(var i=48;i<60;i++){var r=rows[i];var rt=3900/r[2],nv=Math.round(r[3]*rt);r[2]=3900;r[3]=nv;r[4]=Math.round(nv*0.13);r[6]=Math.round(r[6]*rt);r[8]=Math.round(nv*0.015);r[9]=Math.round(r[9]*rt);r[10]=Math.round(nv*0.01);r[17]=r[3]-r[4]-r[5]-r[6]-r[7]-r[8]-r[9]-r[10]-r[11]-r[12]-r[13]-r[14]-r[15]+r[16];}for(var i=48;i<rows.length;i++)rows[i][18]=rows[i-1][18]+rows[i][17];for(var i=48;i<rows.length;i++){rows[i][24]=(i>0?rows[i-1][24]:0)+Math.max(0,rows[i][22]);rows[i][25]=(i>0?rows[i-1][25]:0)+Math.max(0,rows[i][23]);}});for(var k in M){var lr=D[k][59];M[k].invT=lr[24];M[k].mgrT=lr[25];if(M[k].invT>0){M[k].roi=Math.round((M[k].invT-13000000)/130000);M[k].mult=Math.round(M[k].invT/13000000*100)/100;}M[k].cumIntr=lr[26];M[k].bizVal=Math.max(0,lr[17]*25);M[k].invBiz=Math.round(M[k].bizVal/2);M[k].mgrBiz=Math.round(M[k].bizVal/2);}})();
